@@ -6,6 +6,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [code, setCode] = useState('');
+  const [showCode, setShowCode] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -48,10 +49,17 @@ export default function Login() {
         ) : (
           <form onSubmit={verify} className="stack">
             <p>
-              Check <b>{email}</b>. Tap the link in the email — or, if your email shows a code, type it here (handy inside the installed app):
+              Check <b>{email}</b> and tap <b>Sign in</b> in the email. It can take a minute — look in spam too.
             </p>
-            <input inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value)} placeholder="Code from the email" />
-            <button disabled={busy || code.trim().length < 6}>{busy ? 'Checking…' : 'Sign in with code'}</button>
+            <p className="muted small">Tip for phones: sign in here in Chrome first, then install the app. It stays signed in.</p>
+            {showCode ? (
+              <>
+                <input inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value)} placeholder="Code from the email" />
+                <button disabled={busy || code.trim().length < 6}>{busy ? 'Checking…' : 'Sign in with code'}</button>
+              </>
+            ) : (
+              <button type="button" className="link" onClick={() => setShowCode(true)}>My email has a code instead</button>
+            )}
             <button type="button" className="ghost" onClick={() => setSent(false)}>Use another email</button>
           </form>
         )}

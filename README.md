@@ -27,7 +27,7 @@ A shared, invite-only visual archive for 7,000 years of Egyptian history. It wor
    insert into public.members (email, role) values ('you@example.com', 'owner');
    ```
 4. **Authentication → URL Configuration**: set *Site URL* to your app's address (after step 2 below, e.g. `https://askar.vercel.app`). Add `http://localhost:5173` under *Redirect URLs* for local testing.
-5. (Recommended, for signing in inside the installed app) **Authentication → Emails → Magic Link** template: add the line `Your code: {{ .Token }}`. Users can then type the code instead of tapping the link.
+5. On phones, sign in in Chrome first, then install the app (Android shares the login). Email templates can only be edited after connecting custom SMTP; the default sign-in link works fine.
 6. **Project Settings → API**: copy the **Project URL** and the **anon / publishable key**.
 
 > Free tier: 500 MB database, 1 GB file storage. Because museum images are stored as thumbnails (~40 KB each), that covers roughly 20,000 saved finds, minus whatever your own full-size uploads use.
