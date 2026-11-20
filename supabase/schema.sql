@@ -21,6 +21,11 @@ create or replace function public.is_owner() returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (select 1 from public.members where email = lower(auth.jwt() ->> 'email') and role = 'owner');
 $$;
+-- Only signed-in users may ask "am I invited?" (Supabase security advisor).
+revoke execute on function public.is_member() from public, anon;
+revoke execute on function public.is_owner()  from public, anon;
+grant  execute on function public.is_member() to authenticated;
+grant  execute on function public.is_owner()  to authenticated;
 
 -- ---------- Eras: 7,000 years, approximate dates (negative = BCE) ----
 create table if not exists public.eras (
@@ -88,6 +93,7 @@ create index if not exists items_era_idx      on public.items (era_id);
 create index if not exists items_category_idx on public.items (category);
 create index if not exists items_created_idx  on public.items (created_at desc);
 create index if not exists items_subjects_idx on public.items using gin (subjects);
+create index if not exists items_site_idx     on public.items (lower(site));
 
 -- ---------- Boards: mood boards and reconstruction boards ------------
 create table if not exists public.boards (
@@ -111,6 +117,7 @@ create table if not exists public.board_items (
   added_at  timestamptz not null default now(),
   primary key (board_id, item_id)
 );
+create index if not exists board_items_item_idx on public.board_items (item_id);
 
 -- ---------- Counts per era (respects row security) -------------------
 create or replace view public.era_counts with (security_invoker = true) as
