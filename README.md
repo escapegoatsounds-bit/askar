@@ -6,6 +6,7 @@ A shared, invite-only visual archive for 7,000 years of Egyptian history. It wor
 
 - **Timeline**: 18 eras from Predynastic (~5500 BCE) to the modern Republic. Each era opens its own mood board.
 - **Discover**: search open collections from one box. Sources: The Met, Wikimedia Commons, Cleveland Museum of Art, Smithsonian, Library of Congress photos, Chronicling America newspapers, Internet Archive films/scans and Sketchfab 3D scans. License, credit, date and source link are saved with every find. Era and category are guessed from the object's dates.
+- **Search elsewhere**: Google Images, Pinterest, Savee, Canva, Cosmos, Are.na, Flickr, Getty, Bing and Yandex have no public search API for other apps (checked Nov 2026), so Discover opens them with your search pre-filled. Bring finds back with Share → Askar (Android), paste-a-link, or the **Save to Askar** bookmark button (Add page).
 - **Add**: upload from your camera roll, or paste a link to a web page (pick which images to keep), an image or a YouTube video.
 - **Android share menu**: once installed, *Askar* appears in the Share menu of Gallery, Chrome and other apps.
 - **Map**: 56 sites from Kerma to Rosetta on a Mapbox map. Pins grow with the number of finds saved there. A time scrubber (with ▶ play) moves through the eras, there's a satellite view, and tapping a site opens its finds. When you save something, the site is detected from the museum's title and description, so finds land on the map without extra typing. Item pages show a mini-map.
@@ -39,6 +40,7 @@ A shared, invite-only visual archive for 7,000 years of Egyptian history. It wor
    - `VITE_SUPABASE_URL`: the Project URL
    - `VITE_SUPABASE_ANON_KEY`: the anon key
    - `VITE_MAPBOX_TOKEN`: a Mapbox public token (`pk.…`). For the live site, create one restricted to your site's URL at <https://account.mapbox.com/access-tokens/>
+   - `BRAVE_API_KEY` (optional): turns on whole-web image search (the closest thing to Google Images). Get it at <https://brave.com/search/api/>, about $5 per 1,000 searches with $5/month credit
    - `SMITHSONIAN_API_KEY` (optional): a free key from <https://api.data.gov/signup/>
 3. Deploy, then put the resulting URL into Supabase's *Site URL* (step 1.4).
 

@@ -390,3 +390,11 @@ button.chip.era.current { opacity: 1; outline: 2px solid var(--ink); outline-off
 .site-pop .mapboxgl-popup-tip { border-top-color: rgb(15 20 35 / 0.92) !important; border-bottom-color: rgb(15 20 35 / 0.92) !important; }
 .site-pop b { font: 600 1.05rem/1.2 var(--display); }
 @media (max-width: 760px) { .map-panel.top { max-width: calc(100% - 64px); } .era-blurb-map { display: none; } }
+
+/* ---------- search elsewhere ---------- */
+.elsewhere-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.5rem; margin-bottom: 0.5rem; }
+.elsewhere-btn { display: flex; flex-direction: column; gap: 0.1rem; padding: 0.6rem 0.8rem; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
+.elsewhere-btn:hover { text-decoration: none; border-color: var(--gold); }
+.elsewhere-btn small { color: var(--ink-2); font-size: 0.75rem; }
+.elsewhere-btn.disabled { opacity: 0.45; cursor: default; }
+.bookmarklet .button { cursor: grab; }

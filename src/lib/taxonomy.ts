@@ -28,7 +28,7 @@ export const CATEGORY_BY_ID: Record<string, (typeof CATEGORIES)[number]> = Objec
 export function guessCategory(text: string): CategoryId | null {
   const t = text.toLowerCase();
   const rules: [RegExp, CategoryId][] = [
-    [/\bmumm(y|ies|ified)|cartonnage|canopic|skull|ct scan/, 'mummy'],
+    [/\bmumm(y|ies|ified)|cartonnage|canopic|skull|ct scan|funerary mask|mask of/, 'mummy'],
     [/coffin|sarcophag/, 'coffin'],
     [/papyrus|manuscript|book of the dead|ostracon|ostraca|scroll/, 'papyrus'],
     [/stela|stele|inscri|hieroglyph|cartouche/, 'inscription'],
@@ -40,7 +40,7 @@ export function guessCategory(text: string): CategoryId | null {
     [/textile|linen|tunic|tapestry|garment/, 'textile'],
     [/map|plan|elevation|drawing|engraving|description de l/, 'map'],
     [/newspaper|gazette|journal|herald|times|chronicle/, 'newspaper'],
-    [/temple|pyramid|tomb|mosque|church|monastery|citadel|obelisk|gate|fortress|palace|ruins|colossi/, 'architecture'],
+    [/temple|pyramid|tomb|mosque|church|monastery|citadel|obelisk|gate|fortress|palace|ruins|colossi|hypostyle|colonnade|pylon|columns?\b|courtyard|necropolis/, 'architecture'],
     [/photograph|albumen|gelatin silver|lantern slide|stereograph|glass negative/, 'photograph'],
     [/axe|dagger|knife|tool|weapon|sickle|game|board|sandal|comb|mirror/, 'tools'],
   ];

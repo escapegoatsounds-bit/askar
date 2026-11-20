@@ -5,6 +5,8 @@ import { knownExternalIds } from '../lib/data';
 import { ERA_BY_ID } from '../lib/eras';
 import type { Draft, SearchResult } from '../lib/types';
 import { SaveDialog } from '../components/SaveDialog';
+import { ElsewhereSearch } from '../components/ElsewhereSearch';
+import { LinkImporter } from '../components/LinkImporter';
 
 interface SourceInfo { id: string; label: string; note: string; enabled: boolean }
 
@@ -30,7 +32,7 @@ const IDEAS: Record<string, string[]> = {
   republic: ['Aswan High Dam', 'Abu Simbel relocation', 'Nasser', 'Cairo 1960s', 'Grand Egyptian Museum'],
 };
 
-const DEFAULT_SOURCES = ['met', 'commons', 'cleveland'];
+const DEFAULT_SOURCES = ['met', 'commons', 'cleveland', 'openverse'];
 
 export default function Discover() {
   const [params, setParams] = useSearchParams();
@@ -166,6 +168,12 @@ export default function Discover() {
         <label className="inline">
           <input type="checkbox" checked={egypt} onChange={(e) => setEgypt(e.target.checked)} /> Keep results about Egypt (adds “Egypt” / museum Egyptian departments)
         </label>
+      </details>
+
+      <ElsewhereSearch query={q} egypt={egypt} />
+      <details className="sources paste-link">
+        <summary>📎 Paste a link from Pinterest, Google, Savee or any page</summary>
+        <div style={{ marginTop: '0.8rem' }}><LinkImporter onPick={(d) => setDialog(d.map((x) => ({ ...x, eraGuess: x.eraGuess ?? eraParam })))} /></div>
       </details>
 
       {error && <p className="error">{error}</p>}

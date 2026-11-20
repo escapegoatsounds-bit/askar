@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { Draft } from '../lib/types';
 import { SaveDialog } from '../components/SaveDialog';
 import { LinkImporter } from '../components/LinkImporter';
@@ -19,7 +19,9 @@ export function filesToDrafts(files: File[]): Draft[] {
 }
 
 export default function AddPage() {
-  const [tab, setTab] = useState<'upload' | 'link'>('upload');
+  const [params] = useSearchParams();
+  const incoming = params.get('url') || undefined;
+  const [tab, setTab] = useState<'upload' | 'link'>(incoming ? 'link' : 'upload');
   const [drafts, setDrafts] = useState<Draft[] | null>(null);
   const [drag, setDrag] = useState(false);
   const nav = useNavigate();
@@ -64,8 +66,10 @@ export default function AddPage() {
           <span className="muted small">or drag them here on a computer. Originals are stored in full, so your own photos are kept at full quality.</span>
         </label>
       ) : (
-        <LinkImporter onPick={setDrafts} />
+        <LinkImporter initialUrl={incoming} onPick={setDrafts} />
       )}
+
+      <Bookmarklet />
 
       <div className="tip">
         <b>On Android:</b> install this app (browser menu → <i>Install app</i> / <i>Add to Home screen</i>). Then “Askar” appears in the <i>Share</i> menu of Gallery, Chrome and other apps.
@@ -79,5 +83,27 @@ export default function AddPage() {
         />
       )}
     </div>
+  );
+}
+
+/** A drag-to-bookmarks-bar button that sends the current page to Askar. */
+function Bookmarklet() {
+  const ref = useRef<HTMLAnchorElement>(null);
+  useEffect(() => {
+    const code = `javascript:(()=>{window.open('${window.location.origin}/add?url='+encodeURIComponent(location.href),'_blank')})()`;
+    // Set directly: React refuses javascript: links in JSX.
+    ref.current?.setAttribute('href', code);
+  }, []);
+  return (
+    <section className="card bookmarklet" id="bookmark">
+      <h3>💻 “Save to Askar” button for your computer</h3>
+      <p className="small">
+        Drag this button onto your browser's bookmarks bar (press Ctrl+Shift+B if you can't see the bar). Then, on any Pinterest pin, Savee save, Google
+        Images result or web page, click it and Askar opens with that page's images ready to pick.
+      </p>
+      <a ref={ref} className="button" onClick={(e) => e.preventDefault()} draggable>
+        Save to Askar
+      </a>
+    </section>
   );
 }

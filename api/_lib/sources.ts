@@ -344,5 +344,77 @@ const smithsonian: SourceDef = {
   },
 };
 
-export const SOURCES: SourceDef[] = [met, commons, cleveland, smithsonian, locPhotos, locNews, archive, sketchfab];
+
+// ---------------------------------------------------------------- Openverse
+const openverse: SourceDef = {
+  id: 'openverse',
+  label: 'Openverse',
+  note: '800M+ openly licensed images (Flickr, Wikimedia, museums…). Free, no key.',
+  enabled: () => true,
+  async search({ q, page, egyptOnly }) {
+    const query = egyptOnly && !/egypt/i.test(q) ? `${q} egypt` : q;
+    const params = new URLSearchParams({ q: query, page: String(page + 1), page_size: String(PER_PAGE) });
+    const d = await getJson(`https://api.openverse.org/v1/images/?${params}`);
+    return (d.results || [])
+      .filter((o: any) => o.url)
+      .map((o: any) => {
+        const lic = String(o.license || '').toLowerCase();
+        const license = lic === 'cc0' ? 'CC0 (Public Domain)' : lic === 'pdm' ? 'Public Domain Mark' : lic ? `CC ${lic.toUpperCase()} ${o.license_version ?? ''}`.trim() : 'See source';
+        return finish({
+          source: 'openverse',
+          externalId: `openverse:${o.id}`,
+          kind: 'image',
+          title: o.title || 'Untitled',
+          thumbUrl: o.thumbnail || o.url,
+          mediaUrl: o.url,
+          pageUrl: o.foreign_landing_url || null,
+          license,
+          credit: [o.creator, o.source || o.provider].filter(Boolean).join(' · ') || null,
+          dateText: null,
+          yearStart: null,
+          yearEnd: null,
+          description: Array.isArray(o.tags) ? o.tags.map((t: any) => t.name).filter(Boolean).slice(0, 12).join(', ') : null,
+        });
+      });
+  },
+};
+
+// ------------------------------------------------------- Brave Images (key)
+const brave: SourceDef = {
+  id: 'brave',
+  label: 'Brave Images (web)',
+  note: 'Whole-web image search, the closest thing to Google Images. Needs BRAVE_API_KEY.',
+  enabled: () => !!process.env.BRAVE_API_KEY,
+  async search({ q, page, egyptOnly }) {
+    const query = egyptOnly && !/egypt/i.test(q) ? `${q} egypt` : q;
+    const params = new URLSearchParams({ q: query, count: String(PER_PAGE), safesearch: 'strict' });
+    if (page > 0) params.set('offset', String(page));
+    const d = await getJson(`https://api.search.brave.com/res/v1/images/search?${params}`, {
+      headers: { 'X-Subscription-Token': process.env.BRAVE_API_KEY || '' },
+    });
+    return (d.results || [])
+      .map((r: any, i: number) => {
+        const full = r.properties?.url || r.thumbnail?.src;
+        if (!full) return null;
+        return finish({
+          source: 'brave',
+          externalId: `web:${full}`,
+          kind: 'image',
+          title: r.title || r.source || 'Untitled',
+          thumbUrl: r.thumbnail?.src || full,
+          mediaUrl: full,
+          pageUrl: r.url || null,
+          license: 'Unknown — web image, check source before reuse',
+          credit: r.source || r.meta_url?.hostname || null,
+          dateText: null,
+          yearStart: null,
+          yearEnd: null,
+          description: null,
+        });
+      })
+      .filter(Boolean) as SourceResult[];
+  },
+};
+
+export const SOURCES: SourceDef[] = [met, commons, cleveland, openverse, brave, smithsonian, locPhotos, locNews, archive, sketchfab];
 export const SOURCE_BY_ID: Record<string, SourceDef> = Object.fromEntries(SOURCES.map((s) => [s.id, s]));
