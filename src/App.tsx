@@ -1,0 +1,105 @@
+import { NavLink, Route, Routes, Link } from 'react-router-dom';
+import { AuthProvider, useAuth } from './lib/auth';
+import { configured, supabase } from './lib/supabase';
+import Login from './pages/Login';
+import Setup from './pages/Setup';
+import Timeline from './pages/Timeline';
+import Browse from './pages/Browse';
+import Discover from './pages/Discover';
+import AddPage from './pages/AddPage';
+import Boards from './pages/Boards';
+import BoardPage from './pages/BoardPage';
+import ItemPage from './pages/ItemPage';
+import Members from './pages/Members';
+import SharePage from './pages/SharePage';
+import { Ankh } from './components/Ankh';
+
+export default function App() {
+  if (!configured) return <Setup />;
+  return (
+    <AuthProvider>
+      <Gate />
+    </AuthProvider>
+  );
+}
+
+function Gate() {
+  const { loading, session, email, role } = useAuth();
+  if (loading) return <div className="center-screen"><Ankh className="spin-slow" size={48} /></div>;
+  if (!session) return <Login />;
+  if (!role) {
+    return (
+      <div className="center-screen">
+        <div className="card narrow">
+          <Ankh size={40} />
+          <h1>Not on the list (yet)</h1>
+          <p>
+            You're signed in as <b>{email}</b>, but this archive is invite-only. Ask the owner to add this exact email on
+            their <i>Members</i> page, then reload.
+          </p>
+          <div className="row">
+            <button onClick={() => location.reload()}>Reload</button>
+            <button className="ghost" onClick={() => supabase.auth.signOut()}>Sign out</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return <Shell />;
+}
+
+function Shell() {
+  const { role } = useAuth();
+  const nav: { to: string; label: string; icon: React.ReactNode; end?: boolean }[] = [
+    { to: '/', label: 'Timeline', icon: <Ankh size={20} />, end: true },
+    { to: '/discover', label: 'Discover', icon: '🔎' },
+    { to: '/add', label: 'Add', icon: '＋' },
+    { to: '/boards', label: 'Boards', icon: '▦' },
+    { to: '/library', label: 'Library', icon: '▤' },
+  ];
+  return (
+    <div className="shell">
+      <header className="topbar">
+        <Link to="/" className="brand">
+          <Ankh size={26} />
+          <span>Askar</span>
+        </Link>
+        <nav className="topnav">
+          {nav.map((n) => (
+            <NavLink key={n.to} to={n.to} end={n.end}>
+              {n.label}
+            </NavLink>
+          ))}
+          {role === 'owner' && <NavLink to="/members">Members</NavLink>}
+        </nav>
+        <div className="topbar-right">
+          {role === 'owner' && <NavLink to="/members" className="only-mobile icon-link" aria-label="Members">👥</NavLink>}
+          <button className="ghost small" onClick={() => supabase.auth.signOut()}>Sign out</button>
+        </div>
+      </header>
+      <main className="main">
+        <Routes>
+          <Route path="/" element={<Timeline />} />
+          <Route path="/era/:eraId" element={<Browse />} />
+          <Route path="/library" element={<Browse />} />
+          <Route path="/discover" element={<Discover />} />
+          <Route path="/add" element={<AddPage />} />
+          <Route path="/share" element={<SharePage />} />
+          <Route path="/boards" element={<Boards />} />
+          <Route path="/boards/:id" element={<BoardPage />} />
+          <Route path="/item/:id" element={<ItemPage />} />
+          <Route path="/members" element={<Members />} />
+          <Route path="*" element={<div className="empty">Lost in the desert. <Link to="/">Back to the timeline</Link></div>} />
+        </Routes>
+      </main>
+      <nav className="tabbar">
+        {nav.map((n) => (
+          <NavLink key={n.to} to={n.to} end={n.end}>
+            <span className="tab-icon">{n.icon}</span>
+            <span>{n.label}</span>
+          </NavLink>
+        ))}
+      </nav>
+    </div>
+  );
+}
