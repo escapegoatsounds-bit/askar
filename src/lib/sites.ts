@@ -1,6 +1,6 @@
 // Known sites with coordinates. Mirrors the seed in supabase/schema.sql;
 // extra sites added to the database at runtime are merged on top.
-export interface Site { name: string; lat: number; lng: number; region: string; aliases: string[]; description: string }
+export interface Site { name: string; lat: number; lng: number; region: string; aliases: string[]; description: string; eras: string[] }
 
 export const SITES: Site[] = [
   {
@@ -14,7 +14,10 @@ export const SITES: Site[] = [
   "Sphinx",
   "Pyramids of Giza"
   ],
-  "description": "Pyramids of Khufu, Khafre and Menkaure; the Great Sphinx."
+  "description": "Pyramids of Khufu, Khafre and Menkaure; the Great Sphinx.",
+  "eras": [
+  "old-kingdom"
+  ]
   },
   {
   "name": "Saqqara",
@@ -25,7 +28,14 @@ export const SITES: Site[] = [
   "Sakkara",
   "Step Pyramid"
   ],
-  "description": "Djoser's Step Pyramid and 3,000 years of tombs."
+  "description": "Djoser's Step Pyramid and 3,000 years of tombs.",
+  "eras": [
+  "early-dynastic",
+  "old-kingdom",
+  "new-kingdom",
+  "late-period",
+  "ptolemaic"
+  ]
   },
   {
   "name": "Dahshur",
@@ -36,7 +46,11 @@ export const SITES: Site[] = [
   "Bent Pyramid",
   "Red Pyramid"
   ],
-  "description": "Sneferu's Bent and Red pyramids."
+  "description": "Sneferu's Bent and Red pyramids.",
+  "eras": [
+  "old-kingdom",
+  "middle-kingdom"
+  ]
   },
   {
   "name": "Abusir",
@@ -44,7 +58,10 @@ export const SITES: Site[] = [
   "lng": 31.2028,
   "region": "Memphite necropolis",
   "aliases": [],
-  "description": "Fifth Dynasty pyramids and sun temples."
+  "description": "Fifth Dynasty pyramids and sun temples.",
+  "eras": [
+  "old-kingdom"
+  ]
   },
   {
   "name": "Memphis",
@@ -54,7 +71,15 @@ export const SITES: Site[] = [
   "aliases": [
   "Mit Rahina"
   ],
-  "description": "The first capital of united Egypt."
+  "description": "The first capital of united Egypt.",
+  "eras": [
+  "early-dynastic",
+  "old-kingdom",
+  "middle-kingdom",
+  "new-kingdom",
+  "late-period",
+  "ptolemaic"
+  ]
   },
   {
   "name": "Meidum",
@@ -64,7 +89,10 @@ export const SITES: Site[] = [
   "aliases": [
   "Maidum"
   ],
-  "description": "The collapsed pyramid; Rahotep and Nofret."
+  "description": "The collapsed pyramid; Rahotep and Nofret.",
+  "eras": [
+  "old-kingdom"
+  ]
   },
   {
   "name": "Heliopolis",
@@ -75,7 +103,12 @@ export const SITES: Site[] = [
   "Iunu",
   "Matariya"
   ],
-  "description": "City of the sun god; Senusret I's obelisk."
+  "description": "City of the sun god; Senusret I's obelisk.",
+  "eras": [
+  "old-kingdom",
+  "middle-kingdom",
+  "new-kingdom"
+  ]
   },
   {
   "name": "Fayum",
@@ -87,7 +120,12 @@ export const SITES: Site[] = [
   "Hawara",
   "Fayoum"
   ],
-  "description": "Lake oasis; Hawara pyramid; Roman mummy portraits."
+  "description": "Lake oasis; Hawara pyramid; Roman mummy portraits.",
+  "eras": [
+  "middle-kingdom",
+  "ptolemaic",
+  "roman"
+  ]
   },
   {
   "name": "Lahun",
@@ -99,7 +137,10 @@ export const SITES: Site[] = [
   "Illahun",
   "Kahun"
   ],
-  "description": "Senusret II's pyramid and workers' town."
+  "description": "Senusret II's pyramid and workers' town.",
+  "eras": [
+  "middle-kingdom"
+  ]
   },
   {
   "name": "Beni Hasan",
@@ -107,7 +148,10 @@ export const SITES: Site[] = [
   "lng": 30.8833,
   "region": "Middle Egypt",
   "aliases": [],
-  "description": "Painted Middle Kingdom rock tombs."
+  "description": "Painted Middle Kingdom rock tombs.",
+  "eras": [
+  "middle-kingdom"
+  ]
   },
   {
   "name": "Hermopolis",
@@ -118,7 +162,13 @@ export const SITES: Site[] = [
   "Ashmunein",
   "Tuna el-Gebel"
   ],
-  "description": "City of Thoth; ibis and baboon catacombs."
+  "description": "City of Thoth; ibis and baboon catacombs.",
+  "eras": [
+  "new-kingdom",
+  "late-period",
+  "ptolemaic",
+  "roman"
+  ]
   },
   {
   "name": "Amarna",
@@ -129,7 +179,10 @@ export const SITES: Site[] = [
   "Tell el-Amarna",
   "Akhetaten"
   ],
-  "description": "Akhenaten's short-lived capital; Nefertiti's bust."
+  "description": "Akhenaten's short-lived capital; Nefertiti's bust.",
+  "eras": [
+  "new-kingdom"
+  ]
   },
   {
   "name": "Badari",
@@ -139,7 +192,10 @@ export const SITES: Site[] = [
   "aliases": [
   "El-Badari"
   ],
-  "description": "Type site of the Badarian culture."
+  "description": "Type site of the Badarian culture.",
+  "eras": [
+  "predynastic"
+  ]
   },
   {
   "name": "Abydos",
@@ -149,7 +205,13 @@ export const SITES: Site[] = [
   "aliases": [
   "Umm el-Qa'ab"
   ],
-  "description": "Royal tombs of Dynasty 1; Seti I's temple; cult of Osiris."
+  "description": "Royal tombs of Dynasty 1; Seti I's temple; cult of Osiris.",
+  "eras": [
+  "predynastic",
+  "early-dynastic",
+  "middle-kingdom",
+  "new-kingdom"
+  ]
   },
   {
   "name": "Dendera",
@@ -159,7 +221,11 @@ export const SITES: Site[] = [
   "aliases": [
   "Denderah"
   ],
-  "description": "Temple of Hathor; the zodiac ceiling."
+  "description": "Temple of Hathor; the zodiac ceiling.",
+  "eras": [
+  "ptolemaic",
+  "roman"
+  ]
   },
   {
   "name": "Naqada",
@@ -169,7 +235,10 @@ export const SITES: Site[] = [
   "aliases": [
   "Nagada"
   ],
-  "description": "Predynastic cemeteries that name an entire culture."
+  "description": "Predynastic cemeteries that name an entire culture.",
+  "eras": [
+  "predynastic"
+  ]
   },
   {
   "name": "Karnak",
@@ -180,7 +249,14 @@ export const SITES: Site[] = [
   "Thebes",
   "Ipet-isut"
   ],
-  "description": "The vast temple of Amun; the hypostyle hall."
+  "description": "The vast temple of Amun; the hypostyle hall.",
+  "eras": [
+  "middle-kingdom",
+  "new-kingdom",
+  "tip",
+  "late-period",
+  "ptolemaic"
+  ]
   },
   {
   "name": "Luxor Temple",
@@ -190,7 +266,12 @@ export const SITES: Site[] = [
   "aliases": [
   "Luxor"
   ],
-  "description": "Amenhotep III and Ramesses II's temple; Avenue of Sphinxes."
+  "description": "Amenhotep III and Ramesses II's temple; Avenue of Sphinxes.",
+  "eras": [
+  "new-kingdom",
+  "roman",
+  "ayyubid-mamluk"
+  ]
   },
   {
   "name": "Valley of the Kings",
@@ -201,7 +282,11 @@ export const SITES: Site[] = [
   "KV62",
   "Biban el-Muluk"
   ],
-  "description": "New Kingdom royal tombs; Tutankhamun."
+  "description": "New Kingdom royal tombs; Tutankhamun.",
+  "eras": [
+  "new-kingdom",
+  "khedivate"
+  ]
   },
   {
   "name": "Deir el-Bahari",
@@ -213,7 +298,12 @@ export const SITES: Site[] = [
   "Hatshepsut temple",
   "Royal cache"
   ],
-  "description": "Hatshepsut's terraced temple; the royal mummy cache."
+  "description": "Hatshepsut's terraced temple; the royal mummy cache.",
+  "eras": [
+  "middle-kingdom",
+  "new-kingdom",
+  "tip"
+  ]
   },
   {
   "name": "Deir el-Medina",
@@ -223,7 +313,10 @@ export const SITES: Site[] = [
   "aliases": [
   "Set Maat"
   ],
-  "description": "The tomb-builders' village."
+  "description": "The tomb-builders' village.",
+  "eras": [
+  "new-kingdom"
+  ]
   },
   {
   "name": "Ramesseum",
@@ -231,7 +324,10 @@ export const SITES: Site[] = [
   "lng": 32.6105,
   "region": "Thebes",
   "aliases": [],
-  "description": "Ramesses II's memorial temple; the fallen colossus."
+  "description": "Ramesses II's memorial temple; the fallen colossus.",
+  "eras": [
+  "new-kingdom"
+  ]
   },
   {
   "name": "Medinet Habu",
@@ -239,7 +335,12 @@ export const SITES: Site[] = [
   "lng": 32.6006,
   "region": "Thebes",
   "aliases": [],
-  "description": "Ramesses III's temple and battle reliefs."
+  "description": "Ramesses III's temple and battle reliefs.",
+  "eras": [
+  "new-kingdom",
+  "tip",
+  "byzantine-coptic"
+  ]
   },
   {
   "name": "Valley of the Queens",
@@ -249,7 +350,10 @@ export const SITES: Site[] = [
   "aliases": [
   "Nefertari"
   ],
-  "description": "Tomb of Nefertari."
+  "description": "Tomb of Nefertari.",
+  "eras": [
+  "new-kingdom"
+  ]
   },
   {
   "name": "Colossi of Memnon",
@@ -259,7 +363,11 @@ export const SITES: Site[] = [
   "aliases": [
   "Memnon"
   ],
-  "description": "Amenhotep III's twin statues."
+  "description": "Amenhotep III's twin statues.",
+  "eras": [
+  "new-kingdom",
+  "roman"
+  ]
   },
   {
   "name": "Esna",
@@ -267,7 +375,11 @@ export const SITES: Site[] = [
   "lng": 32.5536,
   "region": "Upper Egypt",
   "aliases": [],
-  "description": "Ptolemaic–Roman temple of Khnum."
+  "description": "Ptolemaic–Roman temple of Khnum.",
+  "eras": [
+  "ptolemaic",
+  "roman"
+  ]
   },
   {
   "name": "Elkab",
@@ -278,7 +390,12 @@ export const SITES: Site[] = [
   "Nekheb",
   "El Kab"
   ],
-  "description": "Vulture-goddess city; Ahmose son of Ebana's tomb."
+  "description": "Vulture-goddess city; Ahmose son of Ebana's tomb.",
+  "eras": [
+  "predynastic",
+  "sip",
+  "new-kingdom"
+  ]
   },
   {
   "name": "Hierakonpolis",
@@ -288,7 +405,11 @@ export const SITES: Site[] = [
   "aliases": [
   "Nekhen"
   ],
-  "description": "Predynastic capital; the Narmer Palette was found here."
+  "description": "Predynastic capital; the Narmer Palette was found here.",
+  "eras": [
+  "predynastic",
+  "early-dynastic"
+  ]
   },
   {
   "name": "Edfu",
@@ -296,7 +417,10 @@ export const SITES: Site[] = [
   "lng": 32.8733,
   "region": "Upper Egypt",
   "aliases": [],
-  "description": "Best-preserved temple of Horus."
+  "description": "Best-preserved temple of Horus.",
+  "eras": [
+  "ptolemaic"
+  ]
   },
   {
   "name": "Kom Ombo",
@@ -304,7 +428,11 @@ export const SITES: Site[] = [
   "lng": 32.9283,
   "region": "Upper Egypt",
   "aliases": [],
-  "description": "Double temple of Sobek and Haroeris."
+  "description": "Double temple of Sobek and Haroeris.",
+  "eras": [
+  "ptolemaic",
+  "roman"
+  ]
   },
   {
   "name": "Aswan",
@@ -315,7 +443,13 @@ export const SITES: Site[] = [
   "Elephantine",
   "Unfinished obelisk"
   ],
-  "description": "Granite quarries, Elephantine island, the southern frontier."
+  "description": "Granite quarries, Elephantine island, the southern frontier.",
+  "eras": [
+  "old-kingdom",
+  "middle-kingdom",
+  "new-kingdom",
+  "roman"
+  ]
   },
   {
   "name": "Philae",
@@ -325,7 +459,14 @@ export const SITES: Site[] = [
   "aliases": [
   "Agilkia"
   ],
-  "description": "Temple of Isis, moved stone by stone in the 1970s."
+  "description": "Temple of Isis, moved stone by stone in the 1970s.",
+  "eras": [
+  "late-period",
+  "ptolemaic",
+  "roman",
+  "byzantine-coptic",
+  "republic"
+  ]
   },
   {
   "name": "Kalabsha",
@@ -333,7 +474,11 @@ export const SITES: Site[] = [
   "lng": 32.8656,
   "region": "Nubia",
   "aliases": [],
-  "description": "Roman-era temple relocated near the High Dam."
+  "description": "Roman-era temple relocated near the High Dam.",
+  "eras": [
+  "roman",
+  "republic"
+  ]
   },
   {
   "name": "Aswan High Dam",
@@ -344,7 +489,10 @@ export const SITES: Site[] = [
   "Lake Nasser",
   "High Dam"
   ],
-  "description": "Built 1960–70; flooded Nubia, triggered the UNESCO rescue."
+  "description": "Built 1960–70; flooded Nubia, triggered the UNESCO rescue.",
+  "eras": [
+  "republic"
+  ]
   },
   {
   "name": "Abu Simbel",
@@ -352,7 +500,11 @@ export const SITES: Site[] = [
   "lng": 31.6258,
   "region": "Nubia",
   "aliases": [],
-  "description": "Ramesses II's rock temples, lifted in 1964–68."
+  "description": "Ramesses II's rock temples, lifted in 1964–68.",
+  "eras": [
+  "new-kingdom",
+  "republic"
+  ]
   },
   {
   "name": "Kerma",
@@ -360,7 +512,11 @@ export const SITES: Site[] = [
   "lng": 30.41,
   "region": "Nubia (Sudan)",
   "aliases": [],
-  "description": "Capital of the Kingdom of Kush."
+  "description": "Capital of the Kingdom of Kush.",
+  "eras": [
+  "middle-kingdom",
+  "sip"
+  ]
   },
   {
   "name": "Gebel Barkal",
@@ -370,7 +526,12 @@ export const SITES: Site[] = [
   "aliases": [
   "Napata"
   ],
-  "description": "Sacred mountain of the Kushite pharaohs."
+  "description": "Sacred mountain of the Kushite pharaohs.",
+  "eras": [
+  "new-kingdom",
+  "tip",
+  "late-period"
+  ]
   },
   {
   "name": "Tanis",
@@ -380,7 +541,10 @@ export const SITES: Site[] = [
   "aliases": [
   "San el-Hagar"
   ],
-  "description": "Third Intermediate capital; silver coffins of Psusennes."
+  "description": "Third Intermediate capital; silver coffins of Psusennes.",
+  "eras": [
+  "tip"
+  ]
   },
   {
   "name": "Avaris",
@@ -392,7 +556,11 @@ export const SITES: Site[] = [
   "Piramesse",
   "Qantir"
   ],
-  "description": "Hyksos capital; later Ramesses' Pi-Ramesse."
+  "description": "Hyksos capital; later Ramesses' Pi-Ramesse.",
+  "eras": [
+  "sip",
+  "new-kingdom"
+  ]
   },
   {
   "name": "Bubastis",
@@ -402,7 +570,12 @@ export const SITES: Site[] = [
   "aliases": [
   "Tell Basta"
   ],
-  "description": "Cat-goddess Bastet's city."
+  "description": "Cat-goddess Bastet's city.",
+  "eras": [
+  "old-kingdom",
+  "tip",
+  "late-period"
+  ]
   },
   {
   "name": "Sais",
@@ -412,7 +585,10 @@ export const SITES: Site[] = [
   "aliases": [
   "Sa el-Hagar"
   ],
-  "description": "Seat of the Saite 26th Dynasty."
+  "description": "Seat of the Saite 26th Dynasty.",
+  "eras": [
+  "late-period"
+  ]
   },
   {
   "name": "Buto",
@@ -422,7 +598,12 @@ export const SITES: Site[] = [
   "aliases": [
   "Tell el-Fara'in"
   ],
-  "description": "Predynastic Delta centre; cobra goddess Wadjet."
+  "description": "Predynastic Delta centre; cobra goddess Wadjet.",
+  "eras": [
+  "predynastic",
+  "early-dynastic",
+  "late-period"
+  ]
   },
   {
   "name": "Rosetta",
@@ -433,7 +614,11 @@ export const SITES: Site[] = [
   "Rashid",
   "Rosetta Stone"
   ],
-  "description": "Where the Rosetta Stone was found in 1799."
+  "description": "Where the Rosetta Stone was found in 1799.",
+  "eras": [
+  "ptolemaic",
+  "ottoman"
+  ]
   },
   {
   "name": "Alexandria",
@@ -445,7 +630,13 @@ export const SITES: Site[] = [
   "Kom el-Shoqafa",
   "Pompey's Pillar"
   ],
-  "description": "Alexander's city; Ptolemaic and Roman capital."
+  "description": "Alexander's city; Ptolemaic and Roman capital.",
+  "eras": [
+  "ptolemaic",
+  "roman",
+  "byzantine-coptic",
+  "khedivate"
+  ]
   },
   {
   "name": "Siwa",
@@ -456,7 +647,11 @@ export const SITES: Site[] = [
   "Siwa Oasis",
   "Oracle of Amun"
   ],
-  "description": "Oracle of Amun visited by Alexander."
+  "description": "Oracle of Amun visited by Alexander.",
+  "eras": [
+  "late-period",
+  "ptolemaic"
+  ]
   },
   {
   "name": "Saint Catherine's Monastery",
@@ -467,7 +662,11 @@ export const SITES: Site[] = [
   "Mount Sinai",
   "Sinai"
   ],
-  "description": "6th-century Byzantine monastery and icons."
+  "description": "6th-century Byzantine monastery and icons.",
+  "eras": [
+  "byzantine-coptic",
+  "fatimid"
+  ]
   },
   {
   "name": "Wadi Natrun",
@@ -478,7 +677,11 @@ export const SITES: Site[] = [
   "Wadi El Natrun",
   "Scetis"
   ],
-  "description": "Early Coptic desert monasteries."
+  "description": "Early Coptic desert monasteries.",
+  "eras": [
+  "byzantine-coptic",
+  "early-islamic"
+  ]
   },
   {
   "name": "Coptic Cairo",
@@ -491,7 +694,12 @@ export const SITES: Site[] = [
   "Babylon fortress",
   "Hanging Church"
   ],
-  "description": "Roman fortress, churches and the first Islamic capital, Fustat."
+  "description": "Roman fortress, churches and the first Islamic capital, Fustat.",
+  "eras": [
+  "roman",
+  "byzantine-coptic",
+  "early-islamic"
+  ]
   },
   {
   "name": "Ibn Tulun Mosque",
@@ -501,7 +709,10 @@ export const SITES: Site[] = [
   "aliases": [
   "Ahmad ibn Tulun"
   ],
-  "description": "Oldest intact mosque in Cairo (879 CE)."
+  "description": "Oldest intact mosque in Cairo (879 CE).",
+  "eras": [
+  "early-islamic"
+  ]
   },
   {
   "name": "Al-Azhar",
@@ -513,7 +724,12 @@ export const SITES: Site[] = [
   "Al-Muizz Street",
   "Khan el-Khalili"
   ],
-  "description": "Fatimid mosque-university and the heart of medieval Cairo."
+  "description": "Fatimid mosque-university and the heart of medieval Cairo.",
+  "eras": [
+  "fatimid",
+  "ayyubid-mamluk",
+  "ottoman"
+  ]
   },
   {
   "name": "Bab Zuweila",
@@ -524,7 +740,11 @@ export const SITES: Site[] = [
   "Fatimid walls",
   "Bab al-Futuh"
   ],
-  "description": "Fatimid city gate."
+  "description": "Fatimid city gate.",
+  "eras": [
+  "fatimid",
+  "ayyubid-mamluk"
+  ]
   },
   {
   "name": "Cairo Citadel",
@@ -536,7 +756,12 @@ export const SITES: Site[] = [
   "Saladin Citadel",
   "Muhammad Ali Mosque"
   ],
-  "description": "Saladin's fortress; Muhammad Ali's mosque."
+  "description": "Saladin's fortress; Muhammad Ali's mosque.",
+  "eras": [
+  "ayyubid-mamluk",
+  "ottoman",
+  "khedivate"
+  ]
   },
   {
   "name": "Sultan Hassan Mosque",
@@ -546,7 +771,10 @@ export const SITES: Site[] = [
   "aliases": [
   "Madrasa of Sultan Hassan"
   ],
-  "description": "Monumental Mamluk mosque-madrasa."
+  "description": "Monumental Mamluk mosque-madrasa.",
+  "eras": [
+  "ayyubid-mamluk"
+  ]
   },
   {
   "name": "Downtown Cairo",
@@ -560,7 +788,11 @@ export const SITES: Site[] = [
   "Khedival Cairo",
   "Ismailia"
   ],
-  "description": "Khedive Ismail's Paris on the Nile; the Egyptian Museum."
+  "description": "Khedive Ismail's Paris on the Nile; the Egyptian Museum.",
+  "eras": [
+  "khedivate",
+  "republic"
+  ]
   },
   {
   "name": "Grand Egyptian Museum",
@@ -570,7 +802,10 @@ export const SITES: Site[] = [
   "aliases": [
   "GEM"
   ],
-  "description": "The new home of Tutankhamun's treasures."
+  "description": "The new home of Tutankhamun's treasures.",
+  "eras": [
+  "republic"
+  ]
   },
   {
   "name": "Port Said",
@@ -581,7 +816,42 @@ export const SITES: Site[] = [
   "Suez Canal",
   "Ismailia canal"
   ],
-  "description": "Suez Canal entrance, opened 1869."
+  "description": "Suez Canal entrance, opened 1869.",
+  "eras": [
+  "khedivate",
+  "republic"
+  ]
+  },
+  {
+  "name": "Herakleopolis",
+  "lat": 29.0853,
+  "lng": 30.9348,
+  "region": "Middle Egypt",
+  "aliases": [
+  "Ihnasya",
+  "Heracleopolis",
+  "Nen-nesut"
+  ],
+  "description": "Seat of the 9th–10th Dynasty kings who ruled the north after the Old Kingdom fell.",
+  "eras": [
+  "fip",
+  "middle-kingdom",
+  "tip"
+  ]
+  },
+  {
+  "name": "Lisht",
+  "lat": 29.5703,
+  "lng": 31.2306,
+  "region": "Middle Egypt",
+  "aliases": [
+  "El-Lisht",
+  "Itjtawy"
+  ],
+  "description": "Pyramids of Amenemhat I and Senusret I near the Middle Kingdom capital Itjtawy.",
+  "eras": [
+  "middle-kingdom"
+  ]
   }
   ];
 

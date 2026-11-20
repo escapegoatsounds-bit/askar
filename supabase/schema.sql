@@ -240,7 +240,9 @@ insert into public.sites (name, lat, lng, region, aliases, description) values
   ('Sultan Hassan Mosque', 30.0322, 31.2565, 'Cairo', array['Madrasa of Sultan Hassan']::text[], 'Monumental Mamluk mosque-madrasa.'),
   ('Downtown Cairo', 30.0478, 31.2336, 'Cairo', array['Cairo', 'Tahrir', 'Egyptian Museum', 'Khedival Cairo', 'Ismailia']::text[], 'Khedive Ismail''s Paris on the Nile; the Egyptian Museum.'),
   ('Grand Egyptian Museum', 29.9946, 31.1193, 'Cairo', array['GEM']::text[], 'The new home of Tutankhamun''s treasures.'),
-  ('Port Said', 31.2653, 32.3019, 'Suez Canal', array['Suez Canal', 'Ismailia canal']::text[], 'Suez Canal entrance, opened 1869.')
+  ('Port Said', 31.2653, 32.3019, 'Suez Canal', array['Suez Canal', 'Ismailia canal']::text[], 'Suez Canal entrance, opened 1869.'),
+  ('Herakleopolis', 29.0853, 30.9348, 'Middle Egypt', array['Ihnasya', 'Heracleopolis', 'Nen-nesut']::text[], 'Seat of the 9th–10th Dynasty kings who ruled the north after the Old Kingdom fell.'),
+  ('Lisht', 29.5703, 31.2306, 'Middle Egypt', array['El-Lisht', 'Itjtawy']::text[], 'Pyramids of Amenemhat I and Senusret I near the Middle Kingdom capital Itjtawy.')
 on conflict (name) do update set lat = excluded.lat, lng = excluded.lng, region = excluded.region,
   aliases = excluded.aliases, description = excluded.description;
 
