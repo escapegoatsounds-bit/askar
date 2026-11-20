@@ -12,6 +12,8 @@ import BoardPage from './pages/BoardPage';
 import ItemPage from './pages/ItemPage';
 import Members from './pages/Members';
 import SharePage from './pages/SharePage';
+import Home from './pages/Home';
+import ProjectPage from './pages/ProjectPage';
 import { lazy, Suspense } from 'react';
 const MapPage = lazy(() => import('./pages/MapPage'));
 import { Ankh } from './components/Ankh';
@@ -53,12 +55,13 @@ function Gate() {
 function Shell() {
   const { role } = useAuth();
   const nav: { to: string; label: string; icon: React.ReactNode; end?: boolean }[] = [
-    { to: '/', label: 'Timeline', icon: <Ankh size={20} />, end: true },
-    { to: '/map', label: 'Map', icon: '🗺' },
+    { to: '/', label: 'Projects', icon: '▦', end: true },
     { to: '/discover', label: 'Discover', icon: '🔎' },
     { to: '/add', label: 'Add', icon: '＋' },
-    { to: '/boards', label: 'Boards', icon: '▦' },
+    { to: '/timeline', label: 'Timeline', icon: <Ankh size={20} /> },
+    { to: '/map', label: 'Map', icon: '🗺' },
   ];
+  const team = role === 'owner' || role === 'editor';
   return (
     <div className="shell">
       <header className="topbar">
@@ -67,15 +70,17 @@ function Shell() {
           <span>Askar</span>
         </Link>
         <nav className="topnav">
-          {nav.map((n) => (
+          {nav.filter((n) => team || !['/timeline', '/map'].includes(n.to)).map((n) => (
             <NavLink key={n.to} to={n.to} end={n.end}>
               {n.label}
             </NavLink>
           ))}
+          <NavLink to="/boards">Boards</NavLink>
           <NavLink to="/library">Library</NavLink>
-          {role === 'owner' && <NavLink to="/members">Members</NavLink>}
+          {role === 'owner' && <NavLink to="/members">Team</NavLink>}
         </nav>
         <div className="topbar-right">
+          <NavLink to="/boards" className="only-mobile icon-link" aria-label="Boards">📌</NavLink>
           <NavLink to="/library" className="only-mobile icon-link" aria-label="Library">▤</NavLink>
           {role === 'owner' && <NavLink to="/members" className="only-mobile icon-link" aria-label="Members">👥</NavLink>}
           <button className="ghost small" onClick={() => supabase.auth.signOut()}>Sign out</button>
@@ -83,7 +88,9 @@ function Shell() {
       </header>
       <main className={`main ${useLocation().pathname === '/map' ? 'full' : ''}`}>
         <Routes>
-          <Route path="/" element={<Timeline />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/timeline" element={<Timeline />} />
+          <Route path="/projects/:id" element={<ProjectPage />} />
           <Route path="/era/:eraId" element={<Browse />} />
           <Route path="/library" element={<Browse />} />
           <Route path="/discover" element={<Discover />} />
@@ -94,11 +101,11 @@ function Shell() {
           <Route path="/boards/:id" element={<BoardPage />} />
           <Route path="/item/:id" element={<ItemPage />} />
           <Route path="/members" element={<Members />} />
-          <Route path="*" element={<div className="empty">Lost in the desert. <Link to="/">Back to the timeline</Link></div>} />
+          <Route path="*" element={<div className="empty">Lost in the desert. <Link to="/">Back to your projects</Link></div>} />
         </Routes>
       </main>
       <nav className="tabbar">
-        {nav.map((n) => (
+        {nav.filter((n) => team || !['/timeline', '/map'].includes(n.to)).map((n) => (
           <NavLink key={n.to} to={n.to} end={n.end}>
             <span className="tab-icon">{n.icon}</span>
             <span>{n.label}</span>

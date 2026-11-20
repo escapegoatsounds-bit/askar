@@ -6,7 +6,7 @@ interface AuthState {
   loading: boolean;
   session: Session | null;
   email: string | null;
-  role: 'owner' | 'editor' | null; // null = signed in but not invited
+  role: 'owner' | 'editor' | 'guest' | null; // guest = invited to specific projects only; null = not invited
   refresh: () => void;
 }
 
@@ -14,7 +14,7 @@ const Ctx = createContext<AuthState>({ loading: true, session: null, email: null
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
-  const [role, setRole] = useState<'owner' | 'editor' | null>(null);
+  const [role, setRole] = useState<'owner' | 'editor' | 'guest' | null>(null);
   const [loading, setLoading] = useState(true);
   const [tick, setTick] = useState(0);
 
@@ -43,9 +43,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .select('role')
       .eq('email', email)
       .maybeSingle()
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         if (!alive) return;
-        setRole((data?.role as any) ?? null);
+        if (data?.role) {
+          setRole(data.role as any);
+        } else {
+          // Not on the team: maybe invited to one or more projects.
+          const { data: ok } = await supabase.rpc('has_access');
+          if (!alive) return;
+          setRole(ok === true ? 'guest' : null);
+        }
         setLoading(false);
       });
     return () => {

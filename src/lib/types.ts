@@ -36,6 +36,9 @@ export interface Board {
   subject: string | null;
   cover_item: string | null;
   created_at: string;
+  project_id?: string | null;
+  folder_id?: string | null;
+  position?: number;
 }
 
 export interface BoardItem {
@@ -43,6 +46,8 @@ export interface BoardItem {
   item_id: string;
   angle: string | null;
   position: number;
+  note?: string | null;
+  added_by_email?: string | null;
   items: Item;
 }
 
@@ -94,3 +99,32 @@ export interface SearchResult {
   siteGuess: string | null;
   description: string | null;
 }
+
+export interface Project {
+  id: string;
+  name: string;
+  description: string | null;
+  emoji: string | null;
+  color: string | null;
+  created_by_email: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Folder {
+  id: string;
+  project_id: string;
+  parent_id: string | null;
+  name: string;
+  position: number;
+}
+
+export interface ProjectMember {
+  project_id: string;
+  email: string;
+  role: 'owner' | 'editor' | 'viewer';
+  invited_by: string | null;
+  created_at: string;
+}
+
+export type BoardWithMeta = Board & { count: number; project_id: string | null; folder_id: string | null; position: number };

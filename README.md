@@ -4,6 +4,10 @@ A shared, invite-only visual archive for 7,000 years of Egyptian history. It wor
 
 **What it does**
 
+- **Projects → folders → boards**: organize references for anything (history, photography, AI, design). Invite collaborators per project as owner, editor or viewer; they see only that project. Boards update live for everyone.
+- **Pinterest-style boards**: 📌 Save on every image, drag to rearrange, notes on pins, drop or paste (Ctrl/⌘+V) images straight onto a board or folder, download a board as a .zip with a credits file.
+- **Save to device**: download any image, or use the phone share sheet to save it to your gallery.
+
 - **Timeline**: 18 eras from Predynastic (~5500 BCE) to the modern Republic. Each era opens its own mood board.
 - **Discover**: search open collections from one box. Sources: The Met, Wikimedia Commons, Cleveland Museum of Art, Smithsonian, Library of Congress photos, Chronicling America newspapers, Internet Archive films/scans and Sketchfab 3D scans. License, credit, date and source link are saved with every find. Era and category are guessed from the object's dates.
 - **Search elsewhere**: Google Images, Pinterest, Savee, Canva, Cosmos, Are.na, Flickr, Getty, Bing and Yandex have no public search API for other apps (checked Nov 2026), so Discover opens them with your search pre-filled. Bring finds back with Share → Askar (Android), paste-a-link, or the **Save to Askar** bookmark button (Add page).
@@ -40,6 +44,10 @@ A shared, invite-only visual archive for 7,000 years of Egyptian history. It wor
    - `VITE_SUPABASE_URL`: the Project URL
    - `VITE_SUPABASE_ANON_KEY`: the anon key
    - `VITE_MAPBOX_TOKEN`: a Mapbox public token (`pk.…`). For the live site, create one restricted to your site's URL at <https://account.mapbox.com/access-tokens/>
+   - Optional free keys for more in-app sources (each one switches its source on):
+     - `UNSPLASH_ACCESS_KEY`: <https://unsplash.com/developers> (Access Key, 50 searches/hour to start)
+     - `PEXELS_API_KEY`: <https://www.pexels.com/api/> (200 searches/hour)
+     - `PIXABAY_API_KEY`: <https://pixabay.com/api/docs/> (shown after you sign in)
    - `BRAVE_API_KEY` (optional): turns on whole-web image search (the closest thing to Google Images). Get it at <https://brave.com/search/api/>, about $5 per 1,000 searches with $5/month credit
    - `SMITHSONIAN_API_KEY` (optional): a free key from <https://api.data.gov/signup/>
 3. Deploy, then put the resulting URL into Supabase's *Site URL* (step 1.4).

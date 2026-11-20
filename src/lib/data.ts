@@ -1,6 +1,6 @@
 import { supabase, BUCKET } from './supabase';
 import { makeThumb, fetchRemoteImage, extFor } from './thumbs';
-import type { Board, BoardItem, Draft, Item, Member } from './types';
+import type { Board, BoardItem, BoardWithMeta, Draft, Folder, Item, Member, Project, ProjectMember } from './types';
 
 function must<T>(r: { data: T | null; error: { message: string } | null }): T {
   if (r.error) throw new Error(r.error.message);
@@ -179,8 +179,12 @@ export async function saveDrafts(
 }
 
 // ----------------------------------------------------------------- boards
-export async function listBoards(): Promise<(Board & { count: number })[]> {
-  const rows = must(await supabase.from('boards').select('*, board_items(count)').order('created_at', { ascending: false })) as any[];
+export async function listBoards(filter: { projectId?: string | null; folderId?: string | null } = {}): Promise<BoardWithMeta[]> {
+  let req = supabase.from('boards').select('*, board_items(count)').order('position').order('created_at', { ascending: false });
+  if (filter.projectId) req = req.eq('project_id', filter.projectId);
+  if (filter.folderId === null) req = req.is('folder_id', null);
+  else if (filter.folderId) req = req.eq('folder_id', filter.folderId);
+  const rows = must(await req) as any[];
   return rows.map((r) => ({ ...r, count: r.board_items?.[0]?.count ?? 0 }));
 }
 
@@ -201,9 +205,21 @@ export async function deleteBoard(id: string): Promise<void> {
 }
 
 export async function boardItems(boardId: string): Promise<BoardItem[]> {
-  return must(
+  const rows = must(
     await supabase.from('board_items').select('*, items(*)').eq('board_id', boardId).order('position').order('added_at', { ascending: false }),
   ) as BoardItem[];
+  return rows.filter((r) => r.items);
+}
+
+/** Save a new manual order (Pinterest-style drag to rearrange). */
+export async function reorderBoard(boardId: string, itemIds: string[]): Promise<void> {
+  await Promise.all(
+    itemIds.map((item_id, position) => supabase.from('board_items').update({ position }).eq('board_id', boardId).eq('item_id', item_id)),
+  );
+}
+
+export async function setPinNote(boardId: string, itemId: string, note: string | null): Promise<void> {
+  must(await supabase.from('board_items').update({ note }).eq('board_id', boardId).eq('item_id', itemId));
 }
 
 export async function boardsForItem(itemId: string): Promise<{ board_id: string; angle: string | null }[]> {
@@ -251,4 +267,85 @@ export async function itemsAtSite(names: string[], eraId?: string | null, limit 
   let req = supabase.from('items').select('*').or(ors).order('created_at', { ascending: false }).limit(limit);
   if (eraId) req = req.eq('era_id', eraId);
   return must(await req) as Item[];
+}
+
+// --------------------------------------------------------------- projects
+export async function listProjects(): Promise<(Project & { boards: number })[]> {
+  const rows = must(await supabase.from('projects').select('*, boards(count)').order('updated_at', { ascending: false })) as any[];
+  return rows.map((r) => ({ ...r, boards: r.boards?.[0]?.count ?? 0 }));
+}
+
+export async function getProject(id: string): Promise<Project> {
+  return must(await supabase.from('projects').select('*').eq('id', id).single()) as Project;
+}
+
+export async function createProject(p: Partial<Project>): Promise<Project> {
+  return must(await supabase.from('projects').insert(p).select().single()) as Project;
+}
+
+export async function updateProject(id: string, patch: Partial<Project>): Promise<Project> {
+  return must(await supabase.from('projects').update(patch).eq('id', id).select().single()) as Project;
+}
+
+export async function deleteProject(id: string): Promise<void> {
+  // Boards in the project are deleted too (their pins stay in the library).
+  must(await supabase.from('boards').delete().eq('project_id', id));
+  must(await supabase.from('projects').delete().eq('id', id));
+}
+
+export async function myProjectRole(projectId: string): Promise<'owner' | 'editor' | 'viewer' | null> {
+  const { data } = await supabase.rpc('project_role', { pid: projectId });
+  return (data as any) ?? null;
+}
+
+// ---------------------------------------------------------------- folders
+export async function listFolders(projectId: string): Promise<Folder[]> {
+  return must(await supabase.from('folders').select('*').eq('project_id', projectId).order('position').order('name')) as Folder[];
+}
+
+export async function createFolder(projectId: string, name: string, parentId: string | null): Promise<Folder> {
+  return must(await supabase.from('folders').insert({ project_id: projectId, name, parent_id: parentId }).select().single()) as Folder;
+}
+
+export async function renameFolder(id: string, name: string): Promise<void> {
+  must(await supabase.from('folders').update({ name }).eq('id', id));
+}
+
+export async function deleteFolder(id: string): Promise<void> {
+  // Boards inside move up to the project root (folder_id is set null by the database).
+  must(await supabase.from('folders').delete().eq('id', id));
+}
+
+export async function moveBoard(boardId: string, projectId: string | null, folderId: string | null): Promise<void> {
+  must(await supabase.from('boards').update({ project_id: projectId, folder_id: folderId }).eq('id', boardId));
+}
+
+// ---------------------------------------------------------- collaborators
+export async function listProjectMembers(projectId: string): Promise<ProjectMember[]> {
+  return must(await supabase.from('project_members').select('*').eq('project_id', projectId).order('created_at')) as ProjectMember[];
+}
+
+export async function inviteToProject(projectId: string, email: string, role: 'owner' | 'editor' | 'viewer'): Promise<void> {
+  must(await supabase.from('project_members').insert({ project_id: projectId, email: email.trim().toLowerCase(), role }));
+}
+
+export async function setProjectRole(projectId: string, email: string, role: 'owner' | 'editor' | 'viewer'): Promise<void> {
+  must(await supabase.from('project_members').update({ role }).eq('project_id', projectId).eq('email', email));
+}
+
+export async function removeFromProject(projectId: string, email: string): Promise<void> {
+  must(await supabase.from('project_members').delete().eq('project_id', projectId).eq('email', email));
+}
+
+// --------------------------------------------------------------- realtime
+/** Call `onChange` whenever pins or boards change (by anyone). Returns an unsubscribe function. */
+export function subscribe(channel: string, tables: { table: string; filter?: string }[], onChange: () => void): () => void {
+  let ch = supabase.channel(channel);
+  for (const t of tables) {
+    ch = ch.on('postgres_changes' as any, { event: '*', schema: 'public', table: t.table, ...(t.filter ? { filter: t.filter } : {}) }, () => onChange());
+  }
+  ch.subscribe();
+  return () => {
+    supabase.removeChannel(ch);
+  };
 }

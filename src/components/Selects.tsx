@@ -1,5 +1,5 @@
 import { ERAS, formatRange } from '../lib/eras';
-import { CATEGORIES, ANGLES } from '../lib/taxonomy';
+import { CATEGORIES, ANGLES, HISTORY_CATEGORY_IDS } from '../lib/taxonomy';
 
 export function EraSelect({ value, onChange, autoLabel }: { value: string; onChange: (v: string) => void; autoLabel?: string }) {
   return (
@@ -19,9 +19,16 @@ export function CategorySelect({ value, onChange, autoLabel, allLabel }: { value
       {autoLabel && <option value="auto">{autoLabel}</option>}
       {allLabel && <option value="">{allLabel}</option>}
       {!allLabel && <option value="">—</option>}
-      {CATEGORIES.map((c) => (
-        <option key={c.id} value={c.id}>{c.icon} {c.label}</option>
-      ))}
+      <optgroup label="Visual references">
+        {CATEGORIES.filter((c) => !HISTORY_CATEGORY_IDS.has(c.id)).map((c) => (
+          <option key={c.id} value={c.id}>{c.icon} {c.label}</option>
+        ))}
+      </optgroup>
+      <optgroup label="History & archaeology">
+        {CATEGORIES.filter((c) => HISTORY_CATEGORY_IDS.has(c.id)).map((c) => (
+          <option key={c.id} value={c.id}>{c.icon} {c.label}</option>
+        ))}
+      </optgroup>
     </select>
   );
 }

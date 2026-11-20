@@ -8,7 +8,8 @@ import { SaveDialog } from '../components/SaveDialog';
 import { ElsewhereSearch } from '../components/ElsewhereSearch';
 import { LinkImporter } from '../components/LinkImporter';
 
-interface SourceInfo { id: string; label: string; note: string; enabled: boolean }
+interface SourceInfo { id: string; label: string; note: string; enabled: boolean; group?: 'history' | 'visual' | 'both' }
+type Mode = 'visual' | 'history';
 
 // Starter searches per era — a nudge, not a limit.
 const IDEAS: Record<string, string[]> = {
@@ -32,7 +33,11 @@ const IDEAS: Record<string, string[]> = {
   republic: ['Aswan High Dam', 'Abu Simbel relocation', 'Nasser', 'Cairo 1960s', 'Grand Egyptian Museum'],
 };
 
-const DEFAULT_SOURCES = ['met', 'commons', 'cleveland', 'openverse'];
+const DEFAULT_SOURCES: Record<Mode, string[]> = {
+  visual: ['openverse', 'artic', 'unsplash', 'pexels', 'pixabay', 'brave', 'commons'],
+  history: ['met', 'commons', 'cleveland', 'artic', 'openverse'],
+};
+const VISUAL_IDEAS = ['cinematic desert light', 'brutalist interior', 'neon noir street', 'AI concept art armor', 'film still golden hour', 'botanical illustration', 'swiss poster typography', 'fabric texture macro'];
 
 export default function Discover() {
   const [params, setParams] = useSearchParams();
@@ -40,14 +45,30 @@ export default function Discover() {
   const era = eraParam ? ERA_BY_ID[eraParam] : null;
   const [q, setQ] = useState(params.get('q') || '');
   const [sources, setSources] = useState<SourceInfo[]>([]);
-  const [picked, setPicked] = useState<string[]>(() => {
+  const boardParam = params.get('board');
+  const [mode, setModeState] = useState<Mode>(() => {
+    if (eraParam) return 'history';
     try {
-      const s = JSON.parse(localStorage.getItem('askar.sources') || 'null');
+      const m = localStorage.getItem('askar.mode');
+      if (m === 'history' || m === 'visual') return m;
+    } catch {}
+    return 'visual';
+  });
+  const loadPicked = (m: Mode): string[] => {
+    try {
+      const s = JSON.parse(localStorage.getItem(`askar.sources.${m}`) || 'null');
       if (Array.isArray(s) && s.length) return s;
     } catch {}
-    return DEFAULT_SOURCES;
-  });
-  const [egypt, setEgypt] = useState(true);
+    return DEFAULT_SOURCES[m];
+  };
+  const [picked, setPicked] = useState<string[]>(() => loadPicked(mode));
+  const [egypt, setEgypt] = useState(mode === 'history');
+  function setMode(m: Mode) {
+    setModeState(m);
+    setPicked(loadPicked(m));
+    setEgypt(m === 'history');
+    try { localStorage.setItem('askar.mode', m); } catch {}
+  }
   const [results, setResults] = useState<SearchResult[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [page, setPage] = useState(0);
@@ -63,8 +84,8 @@ export default function Discover() {
   }, []);
 
   useEffect(() => {
-    try { localStorage.setItem('askar.sources', JSON.stringify(picked)); } catch {}
-  }, [picked]);
+    try { localStorage.setItem(`askar.sources.${mode}`, JSON.stringify(picked)); } catch {}
+  }, [picked, mode]);
 
   useEffect(() => {
     const initial = params.get('q');
@@ -74,7 +95,8 @@ export default function Discover() {
 
   async function run(query: string, p: number) {
     const term = query.trim();
-    if (!term || !picked.length) return;
+    const usable = picked.filter((id) => sources.length === 0 || sources.find((s) => s.id === id)?.enabled);
+    if (!term || !usable.length) return;
     setLoading(true);
     setError(null);
     if (p === 0) {
@@ -86,7 +108,7 @@ export default function Discover() {
     setParams(next, { replace: true });
     try {
       const r = await apiJson<{ results: SearchResult[]; errors: Record<string, string> }>(
-        `/api/search?q=${encodeURIComponent(term)}&sources=${picked.join(',')}&page=${p}&egypt=${egypt ? 1 : 0}`,
+        `/api/search?q=${encodeURIComponent(term)}&sources=${usable.join(',')}&page=${p}&egypt=${egypt ? 1 : 0}`,
       );
       setResults((prev) => (p ? [...prev, ...r.results] : r.results));
       setErrors(r.errors);
@@ -133,14 +155,26 @@ export default function Discover() {
     <div className="page">
       <section className="hero compact">
         <h1 className="display">Discover</h1>
-        <p className="muted">Search open museum collections and archives. Licenses and sources are saved with every find.</p>
+        <p className="muted">Search for any visual reference — photography, art, AI, design, 3D — or switch to history mode for museums and archives. Sources and licenses are saved with every find.</p>
+        <div className="tabs mode-tabs">
+          <button className={mode === 'visual' ? 'on' : ''} onClick={() => setMode('visual')}>🎨 Visual references</button>
+          <button className={mode === 'history' ? 'on' : ''} onClick={() => setMode('history')}>🏺 History & museums</button>
+        </div>
       </section>
 
       <form className="search-bar" onSubmit={(e) => { e.preventDefault(); run(q, 0); }}>
-        <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nefertiti, Karnak, canopic jar, Cairo 1890…" autoFocus />
+        <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={mode === 'history' ? 'Nefertiti, Karnak, canopic jar, Cairo 1890…' : 'Any keyword: cinematic lighting, brutalism, cyberpunk armor, film grain…'} autoFocus />
         <button disabled={loading || !q.trim()}>{loading && page === 0 ? 'Searching…' : 'Search'}</button>
       </form>
 
+      {!era && mode === 'visual' && !results.length && (
+        <div className="ideas">
+          <span className="muted small">Try:</span>
+          {VISUAL_IDEAS.map((t) => (
+            <button key={t} type="button" className="chip-btn" onClick={() => { setQ(t); run(t, 0); }}>{t}</button>
+          ))}
+        </div>
+      )}
       {era && (
         <div className="ideas">
           <span className="muted small">Ideas for {era.short}:</span>
@@ -153,7 +187,7 @@ export default function Discover() {
       <details className="sources">
         <summary>Sources: {picked.length ? sources.filter((s) => picked.includes(s.id)).map((s) => s.label).join(', ') || picked.join(', ') : 'none'}</summary>
         <div className="source-grid">
-          {sources.map((s) => (
+          {sources.filter((s) => (s.group ?? 'both') === 'both' || s.group === mode).map((s) => (
             <label key={s.id} className={`source ${s.enabled ? '' : 'disabled'}`}>
               <input
                 type="checkbox"
@@ -165,12 +199,15 @@ export default function Discover() {
             </label>
           ))}
         </div>
-        <label className="inline">
-          <input type="checkbox" checked={egypt} onChange={(e) => setEgypt(e.target.checked)} /> Keep results about Egypt (adds “Egypt” / museum Egyptian departments)
-        </label>
+        {mode === 'history' && (
+          <label className="inline">
+            <input type="checkbox" checked={egypt} onChange={(e) => setEgypt(e.target.checked)} /> Keep results about Egypt (adds “Egypt” / museum Egyptian departments)
+          </label>
+        )}
+        <p className="muted small">Greyed-out sources need a free API key added in Vercel (see the README).</p>
       </details>
 
-      <ElsewhereSearch query={q} egypt={egypt} />
+      <ElsewhereSearch query={q} egypt={mode === 'history' && egypt} mode={mode} />
       <details className="sources paste-link">
         <summary>📎 Paste a link from Pinterest, Google, Savee or any page</summary>
         <div style={{ marginTop: '0.8rem' }}><LinkImporter onPick={(d) => setDialog(d.map((x) => ({ ...x, eraGuess: x.eraGuess ?? eraParam })))} /></div>
@@ -250,6 +287,7 @@ export default function Discover() {
         <SaveDialog
           drafts={dialog}
           defaultEra={eraParam}
+          defaultBoard={boardParam}
           onClose={() => setDialog(null)}
           onSaved={(items) => {
             setSaved((prev) => new Set([...prev, ...items.map((i) => i.external_id!).filter(Boolean)]));

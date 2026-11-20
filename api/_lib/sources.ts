@@ -35,6 +35,8 @@ export interface SearchOpts {
 export interface SourceDef {
   id: string;
   label: string;
+  /** Which Discover mode lists it: history & museums, visual references, or both. */
+  group?: 'history' | 'visual' | 'both';
   note: string;
   enabled: () => boolean;
   search: (o: SearchOpts) => Promise<SourceResult[]>;
@@ -76,6 +78,7 @@ async function getJson(url: string, init?: RequestInit): Promise<any> {
 // ---------------------------------------------------------------- The Met
 const met: SourceDef = {
   id: 'met',
+  group: 'history',
   label: 'The Met',
   note: 'Metropolitan Museum Open Access. Public-domain items are CC0.',
   enabled: () => true,
@@ -113,6 +116,7 @@ const met: SourceDef = {
 // ------------------------------------------------------ Wikimedia Commons
 const commons: SourceDef = {
   id: 'commons',
+  group: 'both',
   label: 'Wikimedia Commons',
   note: 'Huge, freely licensed. Licenses vary per file (CC BY-SA, PD, ...).',
   enabled: () => true,
@@ -161,6 +165,7 @@ const commons: SourceDef = {
 // ------------------------------------------------- Cleveland Museum of Art
 const cleveland: SourceDef = {
   id: 'cleveland',
+  group: 'history',
   label: 'Cleveland Museum of Art',
   note: 'Open Access API. CC0 items are free to use.',
   enabled: () => true,
@@ -195,6 +200,7 @@ const cleveland: SourceDef = {
 function locSearch(id: string, label: string, note: string, collectionPath: string, egyptTerm: boolean, kind: 'image' | 'document'): SourceDef {
   return {
     id,
+    group: 'history',
     label,
     note,
     enabled: () => true,
@@ -233,6 +239,7 @@ const locNews = locSearch('loc-news', 'Chronicling America — Newspapers', 'Dig
 // --------------------------------------------------------- Internet Archive
 const archive: SourceDef = {
   id: 'archive',
+  group: 'both',
   label: 'Internet Archive',
   note: 'Old films, newsreels, books and scans. Rights vary — check each item.',
   enabled: () => true,
@@ -272,6 +279,7 @@ const archive: SourceDef = {
 // ----------------------------------------------------------------- Sketchfab
 const sketchfab: SourceDef = {
   id: 'sketchfab',
+  group: 'both',
   label: 'Sketchfab (3D scans)',
   note: '3D models and photogrammetry scans — gold for reconstruction.',
   enabled: () => true,
@@ -306,6 +314,7 @@ const sketchfab: SourceDef = {
 // ------------------------------------------------------- Smithsonian (key)
 const smithsonian: SourceDef = {
   id: 'smithsonian',
+  group: 'history',
   label: 'Smithsonian',
   note: 'Open Access. Needs a free api.data.gov key (SMITHSONIAN_API_KEY).',
   enabled: () => !!process.env.SMITHSONIAN_API_KEY,
@@ -348,6 +357,7 @@ const smithsonian: SourceDef = {
 // ---------------------------------------------------------------- Openverse
 const openverse: SourceDef = {
   id: 'openverse',
+  group: 'both',
   label: 'Openverse',
   note: '800M+ openly licensed images (Flickr, Wikimedia, museums…). Free, no key.',
   enabled: () => true,
@@ -382,6 +392,7 @@ const openverse: SourceDef = {
 // ------------------------------------------------------- Brave Images (key)
 const brave: SourceDef = {
   id: 'brave',
+  group: 'both',
   label: 'Brave Images (web)',
   note: 'Whole-web image search, the closest thing to Google Images. Needs BRAVE_API_KEY.',
   enabled: () => !!process.env.BRAVE_API_KEY,
@@ -416,5 +427,182 @@ const brave: SourceDef = {
   },
 };
 
-export const SOURCES: SourceDef[] = [met, commons, cleveland, openverse, brave, smithsonian, locPhotos, locNews, archive, sketchfab];
+// ------------------------------------------------ Art Institute of Chicago
+const artic: SourceDef = {
+  id: 'artic',
+  label: 'Art Institute of Chicago',
+  group: 'both',
+  note: 'Paintings, prints, photography, design. Public-domain works are CC0. Free, no key.',
+  enabled: () => true,
+  async search({ q, page, egyptOnly }) {
+    const query = egyptOnly && !/egypt/i.test(q) ? `${q} egypt` : q;
+    const params = new URLSearchParams({
+      q: query,
+      limit: String(PER_PAGE),
+      page: String(page + 1),
+      fields: 'id,title,image_id,artist_display,date_display,date_start,date_end,is_public_domain,medium_display,place_of_origin,classification_title',
+    });
+    const d = await getJson(`https://api.artic.edu/api/v1/artworks/search?${params}`, { headers: { 'AIC-User-Agent': 'AskarArchive (personal research)' } });
+    const iiif = d.config?.iiif_url || 'https://www.artic.edu/iiif/2';
+    return (d.data || [])
+      .filter((o: any) => o.image_id)
+      .map((o: any) =>
+        finish({
+          source: 'artic',
+          externalId: `artic:${o.id}`,
+          kind: 'image',
+          title: o.title || 'Untitled',
+          thumbUrl: `${iiif}/${o.image_id}/full/400,/0/default.jpg`,
+          mediaUrl: `${iiif}/${o.image_id}/full/843,/0/default.jpg`,
+          pageUrl: `https://www.artic.edu/artworks/${o.id}`,
+          license: o.is_public_domain ? 'CC0 (Public Domain)' : 'Rights reserved — check the museum page',
+          credit: o.artist_display || 'Art Institute of Chicago',
+          dateText: o.date_display || null,
+          yearStart: typeof o.date_start === 'number' ? o.date_start : null,
+          yearEnd: typeof o.date_end === 'number' ? o.date_end : null,
+          description: [o.medium_display, o.place_of_origin].filter(Boolean).join(' · ') || null,
+          categoryHint: o.classification_title,
+        }),
+      );
+  },
+};
+
+// --------------------------------------------------------------- NASA
+const nasa: SourceDef = {
+  id: 'nasa',
+  label: 'NASA Images',
+  group: 'visual',
+  note: 'Space, Earth from orbit, aerospace. Generally public domain. Free, no key.',
+  enabled: () => true,
+  async search({ q, page }) {
+    const params = new URLSearchParams({ q, media_type: 'image', page: String(page + 1), page_size: String(PER_PAGE) });
+    const d = await getJson(`https://images-api.nasa.gov/search?${params}`);
+    return (d.collection?.items || [])
+      .map((it: any) => {
+        const m = it.data?.[0] || {};
+        const thumb = it.links?.find((l: any) => l.render === 'image')?.href || it.links?.[0]?.href;
+        if (!thumb || !m.nasa_id) return null;
+        return finish({
+          source: 'nasa',
+          externalId: `nasa:${m.nasa_id}`,
+          kind: 'image',
+          title: m.title || m.nasa_id,
+          thumbUrl: thumb,
+          mediaUrl: thumb.replace(/~thumb\.jpg$/, '~large.jpg'),
+          pageUrl: `https://images.nasa.gov/details/${encodeURIComponent(m.nasa_id)}`,
+          license: 'NASA media — generally public domain (check page)',
+          credit: m.photographer || m.center || 'NASA',
+          dateText: m.date_created ? String(m.date_created).slice(0, 10) : null,
+          yearStart: null,
+          yearEnd: null,
+          description: stripHtml(m.description)?.slice(0, 400) ?? null,
+          categoryHint: 'photograph',
+        });
+      })
+      .filter(Boolean) as SourceResult[];
+  },
+};
+
+// ------------------------------------------------------ Unsplash (key)
+const unsplash: SourceDef = {
+  id: 'unsplash',
+  label: 'Unsplash',
+  group: 'visual',
+  note: 'High-quality photography. Free key: UNSPLASH_ACCESS_KEY (50 searches/hour to start).',
+  enabled: () => !!process.env.UNSPLASH_ACCESS_KEY,
+  async search({ q, page }) {
+    const params = new URLSearchParams({ query: q, per_page: String(PER_PAGE), page: String(page + 1), content_filter: 'high' });
+    const d = await getJson(`https://api.unsplash.com/search/photos?${params}`, {
+      headers: { Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}`, 'Accept-Version': 'v1' },
+    });
+    return (d.results || []).map((p: any) =>
+      finish({
+        source: 'unsplash',
+        externalId: `unsplash:${p.id}`,
+        kind: 'image',
+        title: p.description || p.alt_description || `Photo by ${p.user?.name ?? 'Unsplash'}`,
+        thumbUrl: p.urls?.small,
+        mediaUrl: p.urls?.regular || p.urls?.full,
+        pageUrl: p.links?.html || null,
+        license: 'Unsplash License',
+        credit: p.user?.name ? `${p.user.name} on Unsplash` : 'Unsplash',
+        dateText: p.created_at ? String(p.created_at).slice(0, 10) : null,
+        yearStart: null,
+        yearEnd: null,
+        description: p.alt_description || null,
+        categoryHint: 'photography',
+      }),
+    );
+  },
+};
+
+// -------------------------------------------------------- Pexels (key)
+const pexels: SourceDef = {
+  id: 'pexels',
+  label: 'Pexels',
+  group: 'visual',
+  note: 'Free stock photography. Free key: PEXELS_API_KEY (200 searches/hour).',
+  enabled: () => !!process.env.PEXELS_API_KEY,
+  async search({ q, page }) {
+    const params = new URLSearchParams({ query: q, per_page: String(PER_PAGE), page: String(page + 1) });
+    const d = await getJson(`https://api.pexels.com/v1/search?${params}`, { headers: { Authorization: process.env.PEXELS_API_KEY || '' } });
+    return (d.photos || []).map((p: any) =>
+      finish({
+        source: 'pexels',
+        externalId: `pexels:${p.id}`,
+        kind: 'image',
+        title: p.alt || `Photo by ${p.photographer ?? 'Pexels'}`,
+        thumbUrl: p.src?.medium,
+        mediaUrl: p.src?.large2x || p.src?.original,
+        pageUrl: p.url || null,
+        license: 'Pexels License',
+        credit: p.photographer ? `${p.photographer} on Pexels` : 'Pexels',
+        dateText: null,
+        yearStart: null,
+        yearEnd: null,
+        description: p.alt || null,
+        categoryHint: 'photography',
+      }),
+    );
+  },
+};
+
+// ------------------------------------------------------- Pixabay (key)
+const pixabay: SourceDef = {
+  id: 'pixabay',
+  label: 'Pixabay',
+  group: 'visual',
+  note: 'Photos, illustrations and vectors. Free key: PIXABAY_API_KEY.',
+  enabled: () => !!process.env.PIXABAY_API_KEY,
+  async search({ q, page }) {
+    const params = new URLSearchParams({
+      key: process.env.PIXABAY_API_KEY || '',
+      q: q.slice(0, 100),
+      per_page: String(PER_PAGE),
+      page: String(page + 1),
+      safesearch: 'true',
+    });
+    const d = await getJson(`https://pixabay.com/api/?${params}`);
+    return (d.hits || []).map((h: any) =>
+      finish({
+        source: 'pixabay',
+        externalId: `pixabay:${h.id}`,
+        kind: 'image',
+        title: h.tags ? String(h.tags).split(',').slice(0, 4).join(', ') : 'Pixabay image',
+        thumbUrl: h.webformatURL || h.previewURL,
+        mediaUrl: h.largeImageURL || h.webformatURL,
+        pageUrl: h.pageURL || null,
+        license: 'Pixabay Content License',
+        credit: h.user ? `${h.user} on Pixabay` : 'Pixabay',
+        dateText: null,
+        yearStart: null,
+        yearEnd: null,
+        description: h.tags || null,
+        categoryHint: h.type === 'illustration' || h.type === 'vector/svg' ? 'illustration' : 'photography',
+      }),
+    );
+  },
+};
+
+export const SOURCES: SourceDef[] = [met, commons, cleveland, artic, openverse, brave, unsplash, pexels, pixabay, nasa, smithsonian, locPhotos, locNews, archive, sketchfab];
 export const SOURCE_BY_ID: Record<string, SourceDef> = Object.fromEntries(SOURCES.map((s) => [s.id, s]));

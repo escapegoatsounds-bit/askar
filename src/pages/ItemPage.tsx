@@ -8,6 +8,8 @@ import { CATEGORY_BY_ID, ANGLE_BY_ID } from '../lib/taxonomy';
 import type { Item } from '../lib/types';
 import { ChipsInput } from '../components/ChipsInput';
 import { findSite, staticMapUrl } from '../lib/sites';
+import { PinButton } from '../components/PinButton';
+import { canDownload, canShareFiles, downloadItem, shareItem } from '../lib/download';
 import { CategorySelect, EraSelect } from '../components/Selects';
 
 function embedFor(item: Item): string | null {
@@ -84,7 +86,11 @@ export default function ItemPage() {
                 <dt>Added</dt><dd>{new Date(it.created_at).toLocaleDateString()}{it.created_by_email ? ` by ${it.created_by_email}` : ''}</dd>
               </dl>
               <div className="row">
-                <button onClick={() => setEditing(true)}>Edit details</button>
+                <PinButton itemIds={[it.id]} />
+                {canDownload(it) && <SaveToDevice item={it} />}
+              </div>
+              <div className="row">
+                <button className="ghost" onClick={() => setEditing(true)}>Edit details</button>
                 <button
                   className="ghost danger"
                   onClick={async () => {
@@ -182,5 +188,30 @@ function SiteMap({ place }: { place: string | null }) {
       <img src={url} alt={`Map showing ${site.name}`} loading="lazy" />
       <span>📍 {site.name} · {site.region} — open on the map →</span>
     </Link>
+  );
+}
+
+function SaveToDevice({ item }: { item: Item }) {
+  const [busy, setBusy] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const run = async (label: string, fn: () => Promise<void>) => {
+    setBusy(label);
+    setErr(null);
+    try {
+      await fn();
+    } catch (e) {
+      if ((e as Error).name !== 'AbortError') setErr((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
+  return (
+    <>
+      <button className="ghost" disabled={!!busy} onClick={() => run('Downloading…', () => downloadItem(item))}>⬇ {busy === 'Downloading…' ? busy : 'Download'}</button>
+      {canShareFiles() && (
+        <button className="ghost" disabled={!!busy} onClick={() => run('Opening…', () => shareItem(item))}>📲 {busy === 'Opening…' ? busy : 'Save to phone / share'}</button>
+      )}
+      {err && <span className="error small">{err}</span>}
+    </>
   );
 }

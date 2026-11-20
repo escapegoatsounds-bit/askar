@@ -8,7 +8,7 @@ export async function GET(req: Request): Promise<Response> {
 
   const url = new URL(req.url);
   if (url.searchParams.get('list') === '1') {
-    return json({ sources: SOURCES.map((s) => ({ id: s.id, label: s.label, note: s.note, enabled: s.enabled() })) });
+    return json({ sources: SOURCES.map((s) => ({ id: s.id, label: s.label, note: s.note, group: s.group ?? 'both', enabled: s.enabled() })) });
   }
 
   const q = (url.searchParams.get('q') || '').trim().slice(0, 200);

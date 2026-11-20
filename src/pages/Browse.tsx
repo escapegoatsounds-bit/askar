@@ -68,7 +68,7 @@ export default function Browse() {
     <div className="page">
       {era ? (
         <section className="era-hero" style={{ ['--hue' as any]: era.hue }}>
-          <Link to="/" className="muted small">← Timeline</Link>
+          <Link to="/timeline" className="muted small">← Timeline</Link>
           <h1 className="display">{era.name}</h1>
           <p className="era-dates">{formatRange(era)}</p>
           <p>{era.blurb}</p>

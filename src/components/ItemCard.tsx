@@ -3,15 +3,19 @@ import type { Item } from '../lib/types';
 import { useThumb } from '../lib/media';
 import { ERA_BY_ID } from '../lib/eras';
 import { CATEGORY_BY_ID, ANGLE_BY_ID } from '../lib/taxonomy';
+import { PinButton } from './PinButton';
 
 const KIND_BADGE: Record<string, string> = { video: '▶ Video', model3d: '🧊 3D', document: '📄 Doc' };
 
-export function ItemCard({ item, angle, selected, onSelect, actions }: {
+export function ItemCard({ item, angle, selected, onSelect, actions, note, pin = true, by }: {
   item: Item;
   angle?: string | null;
   selected?: boolean;
   onSelect?: (item: Item) => void;
   actions?: React.ReactNode;
+  note?: string | null;
+  pin?: boolean;
+  by?: string | null;
 }) {
   const thumb = useThumb(item);
   const era = item.era_id ? ERA_BY_ID[item.era_id] : null;
@@ -28,7 +32,7 @@ export function ItemCard({ item, angle, selected, onSelect, actions }: {
         <div className="title" title={item.title}>{cat ? `${cat.icon} ` : ''}{item.title}</div>
         <div className="sub">
           {era && <span className="era-dot" style={{ background: `hsl(${era.hue} 55% 50%)` }} />}
-          {era?.short ?? 'Undated'}
+          {era ? era.short : cat ? cat.label : item.source_name ?? ''}
           {item.site ? ` · ${item.site}` : ''}
         </div>
       </div>
@@ -41,6 +45,9 @@ export function ItemCard({ item, angle, selected, onSelect, actions }: {
       ) : (
         <Link to={`/item/${item.id}`} className="card-hit">{body}</Link>
       )}
+      {pin && !onSelect && <div className="card-pin"><PinButton itemIds={[item.id]} /></div>}
+      {note && <div className="pin-note">{note}</div>}
+      {by && <div className="pin-by" title={`Added by ${by}`}>{by.slice(0, 1).toUpperCase()}</div>}
       {actions && <div className="card-actions">{actions}</div>}
     </div>
   );
