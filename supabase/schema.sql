@@ -160,6 +160,88 @@ create policy media_insert on storage.objects for insert with check (bucket_id =
 create policy media_update on storage.objects for update using (bucket_id = 'media' and public.is_member());
 create policy media_delete on storage.objects for delete using (bucket_id = 'media' and public.is_member());
 
+
+-- ---------- Sites: places on the map (match items by name/alias) -----
+create table if not exists public.sites (
+  id          serial primary key,
+  name        text not null unique,
+  lat         double precision not null,
+  lng         double precision not null,
+  region      text,
+  aliases     text[] not null default '{}',
+  description text
+);
+alter table public.sites enable row level security;
+drop policy if exists sites_read on public.sites;
+drop policy if exists sites_write on public.sites;
+create policy sites_read  on public.sites for select using (public.is_member());
+create policy sites_write on public.sites for all using (public.is_member()) with check (public.is_member());
+
+insert into public.sites (name, lat, lng, region, aliases, description) values
+  ('Giza', 29.9792, 31.1342, 'Memphite necropolis', array['Giza Plateau', 'Great Pyramid', 'Sphinx', 'Pyramids of Giza']::text[], 'Pyramids of Khufu, Khafre and Menkaure; the Great Sphinx.'),
+  ('Saqqara', 29.8713, 31.2165, 'Memphite necropolis', array['Sakkara', 'Step Pyramid']::text[], 'Djoser''s Step Pyramid and 3,000 years of tombs.'),
+  ('Dahshur', 29.8078, 31.2061, 'Memphite necropolis', array['Bent Pyramid', 'Red Pyramid']::text[], 'Sneferu''s Bent and Red pyramids.'),
+  ('Abusir', 29.8956, 31.2028, 'Memphite necropolis', array[]::text[], 'Fifth Dynasty pyramids and sun temples.'),
+  ('Memphis', 29.8447, 31.2503, 'Lower Egypt', array['Mit Rahina']::text[], 'The first capital of united Egypt.'),
+  ('Meidum', 29.3883, 31.1572, 'Middle Egypt', array['Maidum']::text[], 'The collapsed pyramid; Rahotep and Nofret.'),
+  ('Heliopolis', 30.1292, 31.3076, 'Lower Egypt', array['Iunu', 'Matariya']::text[], 'City of the sun god; Senusret I''s obelisk.'),
+  ('Fayum', 29.3084, 30.8428, 'Fayum', array['Faiyum', 'Hawara', 'Fayoum']::text[], 'Lake oasis; Hawara pyramid; Roman mummy portraits.'),
+  ('Lahun', 29.2333, 30.9667, 'Fayum', array['El-Lahun', 'Illahun', 'Kahun']::text[], 'Senusret II''s pyramid and workers'' town.'),
+  ('Beni Hasan', 27.9333, 30.8833, 'Middle Egypt', array[]::text[], 'Painted Middle Kingdom rock tombs.'),
+  ('Hermopolis', 27.7811, 30.8036, 'Middle Egypt', array['Ashmunein', 'Tuna el-Gebel']::text[], 'City of Thoth; ibis and baboon catacombs.'),
+  ('Amarna', 27.645, 30.8956, 'Middle Egypt', array['Tell el-Amarna', 'Akhetaten']::text[], 'Akhenaten''s short-lived capital; Nefertiti''s bust.'),
+  ('Badari', 27.0, 31.4167, 'Upper Egypt', array['El-Badari']::text[], 'Type site of the Badarian culture.'),
+  ('Abydos', 26.1847, 31.9189, 'Upper Egypt', array['Umm el-Qa''ab']::text[], 'Royal tombs of Dynasty 1; Seti I''s temple; cult of Osiris.'),
+  ('Dendera', 26.1417, 32.6703, 'Upper Egypt', array['Denderah']::text[], 'Temple of Hathor; the zodiac ceiling.'),
+  ('Naqada', 25.9, 32.7167, 'Upper Egypt', array['Nagada']::text[], 'Predynastic cemeteries that name an entire culture.'),
+  ('Karnak', 25.7188, 32.6573, 'Thebes', array['Thebes', 'Ipet-isut']::text[], 'The vast temple of Amun; the hypostyle hall.'),
+  ('Luxor Temple', 25.6995, 32.6391, 'Thebes', array['Luxor']::text[], 'Amenhotep III and Ramesses II''s temple; Avenue of Sphinxes.'),
+  ('Valley of the Kings', 25.7402, 32.6014, 'Thebes', array['KV62', 'Biban el-Muluk']::text[], 'New Kingdom royal tombs; Tutankhamun.'),
+  ('Deir el-Bahari', 25.7383, 32.6066, 'Thebes', array['Djeser-Djeseru', 'Hatshepsut temple', 'Royal cache']::text[], 'Hatshepsut''s terraced temple; the royal mummy cache.'),
+  ('Deir el-Medina', 25.7286, 32.6013, 'Thebes', array['Set Maat']::text[], 'The tomb-builders'' village.'),
+  ('Ramesseum', 25.728, 32.6105, 'Thebes', array[]::text[], 'Ramesses II''s memorial temple; the fallen colossus.'),
+  ('Medinet Habu', 25.7195, 32.6006, 'Thebes', array[]::text[], 'Ramesses III''s temple and battle reliefs.'),
+  ('Valley of the Queens', 25.7281, 32.5928, 'Thebes', array['Nefertari']::text[], 'Tomb of Nefertari.'),
+  ('Colossi of Memnon', 25.7206, 32.6104, 'Thebes', array['Memnon']::text[], 'Amenhotep III''s twin statues.'),
+  ('Esna', 25.2933, 32.5536, 'Upper Egypt', array[]::text[], 'Ptolemaic–Roman temple of Khnum.'),
+  ('Elkab', 25.1194, 32.7958, 'Upper Egypt', array['Nekheb', 'El Kab']::text[], 'Vulture-goddess city; Ahmose son of Ebana''s tomb.'),
+  ('Hierakonpolis', 25.0972, 32.7794, 'Upper Egypt', array['Nekhen']::text[], 'Predynastic capital; the Narmer Palette was found here.'),
+  ('Edfu', 24.9779, 32.8733, 'Upper Egypt', array[]::text[], 'Best-preserved temple of Horus.'),
+  ('Kom Ombo', 24.452, 32.9283, 'Upper Egypt', array[]::text[], 'Double temple of Sobek and Haroeris.'),
+  ('Aswan', 24.085, 32.8869, 'Aswan', array['Elephantine', 'Unfinished obelisk']::text[], 'Granite quarries, Elephantine island, the southern frontier.'),
+  ('Philae', 24.0256, 32.8844, 'Aswan', array['Agilkia']::text[], 'Temple of Isis, moved stone by stone in the 1970s.'),
+  ('Kalabsha', 23.9608, 32.8656, 'Nubia', array[]::text[], 'Roman-era temple relocated near the High Dam.'),
+  ('Aswan High Dam', 23.9709, 32.878, 'Aswan', array['Lake Nasser', 'High Dam']::text[], 'Built 1960–70; flooded Nubia, triggered the UNESCO rescue.'),
+  ('Abu Simbel', 22.3372, 31.6258, 'Nubia', array[]::text[], 'Ramesses II''s rock temples, lifted in 1964–68.'),
+  ('Kerma', 19.6, 30.41, 'Nubia (Sudan)', array[]::text[], 'Capital of the Kingdom of Kush.'),
+  ('Gebel Barkal', 18.5357, 31.8278, 'Nubia (Sudan)', array['Napata']::text[], 'Sacred mountain of the Kushite pharaohs.'),
+  ('Tanis', 30.9767, 31.8803, 'Delta', array['San el-Hagar']::text[], 'Third Intermediate capital; silver coffins of Psusennes.'),
+  ('Avaris', 30.7875, 31.8211, 'Delta', array['Tell el-Dab''a', 'Piramesse', 'Qantir']::text[], 'Hyksos capital; later Ramesses'' Pi-Ramesse.'),
+  ('Bubastis', 30.5728, 31.5106, 'Delta', array['Tell Basta']::text[], 'Cat-goddess Bastet''s city.'),
+  ('Sais', 30.9653, 30.7686, 'Delta', array['Sa el-Hagar']::text[], 'Seat of the Saite 26th Dynasty.'),
+  ('Buto', 31.1964, 30.7417, 'Delta', array['Tell el-Fara''in']::text[], 'Predynastic Delta centre; cobra goddess Wadjet.'),
+  ('Rosetta', 31.4044, 30.4164, 'Delta', array['Rashid', 'Rosetta Stone']::text[], 'Where the Rosetta Stone was found in 1799.'),
+  ('Alexandria', 31.2001, 29.9187, 'Mediterranean', array['Pharos', 'Kom el-Shoqafa', 'Pompey''s Pillar']::text[], 'Alexander''s city; Ptolemaic and Roman capital.'),
+  ('Siwa', 29.2032, 25.5195, 'Western Desert', array['Siwa Oasis', 'Oracle of Amun']::text[], 'Oracle of Amun visited by Alexander.'),
+  ('Saint Catherine''s Monastery', 28.5559, 33.976, 'Sinai', array['Mount Sinai', 'Sinai']::text[], '6th-century Byzantine monastery and icons.'),
+  ('Wadi Natrun', 30.3167, 30.35, 'Western Desert', array['Wadi El Natrun', 'Scetis']::text[], 'Early Coptic desert monasteries.'),
+  ('Coptic Cairo', 30.0057, 31.2306, 'Cairo', array['Old Cairo', 'Fustat', 'Babylon fortress', 'Hanging Church']::text[], 'Roman fortress, churches and the first Islamic capital, Fustat.'),
+  ('Ibn Tulun Mosque', 30.0287, 31.2495, 'Cairo', array['Ahmad ibn Tulun']::text[], 'Oldest intact mosque in Cairo (879 CE).'),
+  ('Al-Azhar', 30.0459, 31.2627, 'Cairo', array['Islamic Cairo', 'Al-Muizz Street', 'Khan el-Khalili']::text[], 'Fatimid mosque-university and the heart of medieval Cairo.'),
+  ('Bab Zuweila', 30.0429, 31.2579, 'Cairo', array['Fatimid walls', 'Bab al-Futuh']::text[], 'Fatimid city gate.'),
+  ('Cairo Citadel', 30.0299, 31.2611, 'Cairo', array['Citadel', 'Saladin Citadel', 'Muhammad Ali Mosque']::text[], 'Saladin''s fortress; Muhammad Ali''s mosque.'),
+  ('Sultan Hassan Mosque', 30.0322, 31.2565, 'Cairo', array['Madrasa of Sultan Hassan']::text[], 'Monumental Mamluk mosque-madrasa.'),
+  ('Downtown Cairo', 30.0478, 31.2336, 'Cairo', array['Cairo', 'Tahrir', 'Egyptian Museum', 'Khedival Cairo', 'Ismailia']::text[], 'Khedive Ismail''s Paris on the Nile; the Egyptian Museum.'),
+  ('Grand Egyptian Museum', 29.9946, 31.1193, 'Cairo', array['GEM']::text[], 'The new home of Tutankhamun''s treasures.'),
+  ('Port Said', 31.2653, 32.3019, 'Suez Canal', array['Suez Canal', 'Ismailia canal']::text[], 'Suez Canal entrance, opened 1869.')
+on conflict (name) do update set lat = excluded.lat, lng = excluded.lng, region = excluded.region,
+  aliases = excluded.aliases, description = excluded.description;
+
+-- Finds per site and era (respects row security)
+create or replace view public.site_counts with (security_invoker = true) as
+  select lower(site) as site_key, era_id, count(*)::int as n
+  from public.items where site is not null group by lower(site), era_id;
+
 -- =====================================================================
 -- BOOTSTRAP: make yourself the owner. Replace the email, then run it.
 -- (Lower-case only.) Everyone else you invite from inside the app.

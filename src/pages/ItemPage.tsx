@@ -7,6 +7,7 @@ import { ERA_BY_ID } from '../lib/eras';
 import { CATEGORY_BY_ID, ANGLE_BY_ID } from '../lib/taxonomy';
 import type { Item } from '../lib/types';
 import { ChipsInput } from '../components/ChipsInput';
+import { findSite, staticMapUrl } from '../lib/sites';
 import { CategorySelect, EraSelect } from '../components/Selects';
 
 function embedFor(item: Item): string | null {
@@ -96,6 +97,8 @@ export default function ItemPage() {
             </>
           )}
 
+          <SiteMap place={it.site} />
+
           <section className="card">
             <h3>On boards</h3>
             {boards.data?.length ? (
@@ -165,5 +168,19 @@ function ItemEditor({ item, onDone }: { item: Item; onDone: (patch: Partial<Item
         <button>Save</button>
       </div>
     </form>
+  );
+}
+
+function SiteMap({ place }: { place: string | null }) {
+  const site = findSite(place);
+  if (!site) return null;
+  const dark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+  const url = staticMapUrl([site], { w: 600, h: 260, zoom: 6.5, dark });
+  if (!url) return null;
+  return (
+    <Link to={`/map?site=${encodeURIComponent(site.name)}`} className="mini-map card">
+      <img src={url} alt={`Map showing ${site.name}`} loading="lazy" />
+      <span>📍 {site.name} · {site.region} — open on the map →</span>
+    </Link>
   );
 }

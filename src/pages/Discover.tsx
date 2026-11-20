@@ -123,6 +123,7 @@ export default function Discover() {
       description: r.description,
       eraGuess: r.eraGuess ?? eraParam,
       categoryGuess: r.categoryGuess,
+      siteGuess: r.siteGuess,
     };
   }
 

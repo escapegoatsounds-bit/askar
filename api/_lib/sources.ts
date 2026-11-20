@@ -5,6 +5,7 @@
 import { fetchWithTimeout } from './safeUrl.js';
 import { guessEra, parseYears } from '../../src/lib/eras.js';
 import { guessCategory } from '../../src/lib/taxonomy.js';
+import { findSiteInText } from '../../src/lib/sites.js';
 
 export interface SourceResult {
   source: string;
@@ -21,6 +22,7 @@ export interface SourceResult {
   yearEnd: number | null;
   eraGuess: string | null;
   categoryGuess: string | null;
+  siteGuess: string | null;
   description: string | null;
 }
 
@@ -46,7 +48,7 @@ function stripHtml(s: unknown): string | null {
   return out || null;
 }
 
-function finish(r: Omit<SourceResult, 'eraGuess' | 'categoryGuess'> & { categoryHint?: string }): SourceResult {
+function finish(r: Omit<SourceResult, 'eraGuess' | 'categoryGuess' | 'siteGuess'> & { categoryHint?: string }): SourceResult {
   let { yearStart, yearEnd } = r;
   if (yearStart === null && yearEnd === null && r.dateText) {
     const p = parseYears(r.dateText);
@@ -59,6 +61,7 @@ function finish(r: Omit<SourceResult, 'eraGuess' | 'categoryGuess'> & { category
     yearStart,
     yearEnd,
     eraGuess: guessEra(yearStart, yearEnd),
+    siteGuess: findSiteInText(`${r.title} ${r.description ?? ''}`)?.name ?? null,
     categoryGuess:
       r.kind === 'video' ? 'video' : r.kind === 'model3d' ? 'model3d' : guessCategory(`${categoryHint ?? ''} ${r.title}`),
   };

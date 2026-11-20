@@ -4,6 +4,7 @@ import { allSites, allSubjects, createBoard, listBoards, saveDrafts } from '../l
 import { ERA_BY_ID } from '../lib/eras';
 import { CATEGORY_BY_ID } from '../lib/taxonomy';
 import { ChipsInput } from './ChipsInput';
+import { SITES } from '../lib/sites';
 import { AngleSelect, CategorySelect, EraSelect } from './Selects';
 
 /**
@@ -40,7 +41,9 @@ export function SaveDialog({ drafts, onClose, onSaved, defaultEra, defaultBoard 
   useEffect(() => {
     listBoards().then(setBoards).catch(() => {});
     allSubjects().then(setSubjectSugg).catch(() => {});
-    allSites().then(setSiteSugg).catch(() => {});
+    allSites()
+      .then((used) => setSiteSugg([...new Set([...SITES.map((x) => x.name), ...used])].sort((a, b) => a.localeCompare(b))))
+      .catch(() => setSiteSugg(SITES.map((x) => x.name)));
   }, []);
 
   const board = boards.find((b) => b.id === boardId);
@@ -48,6 +51,7 @@ export function SaveDialog({ drafts, onClose, onSaved, defaultEra, defaultBoard 
     const ids = [...new Set(drafts.map((d) => d.eraGuess).filter(Boolean))] as string[];
     return ids.map((id) => ERA_BY_ID[id]?.short).filter(Boolean).join(', ');
   }, [drafts]);
+  const siteSummary = useMemo(() => [...new Set(drafts.map((d) => d.siteGuess).filter(Boolean))].join(', '), [drafts]);
   const catSummary = useMemo(() => {
     const ids = [...new Set(drafts.map((d) => d.categoryGuess).filter(Boolean))] as string[];
     return ids.map((id) => CATEGORY_BY_ID[id]?.label).filter(Boolean).join(', ');
@@ -116,7 +120,7 @@ export function SaveDialog({ drafts, onClose, onSaved, defaultEra, defaultBoard 
           </label>
           <label>
             Site / place
-            <input list="site-sugg" value={site} onChange={(e) => setSite(e.target.value)} placeholder="Giza, Karnak, Amarna…" />
+            <input list="site-sugg" value={site} onChange={(e) => setSite(e.target.value)} placeholder={siteSummary ? `Auto: ${siteSummary}` : 'Giza, Karnak, Amarna…'} />
             <datalist id="site-sugg">{siteSugg.map((s) => <option key={s} value={s} />)}</datalist>
           </label>
           <label>

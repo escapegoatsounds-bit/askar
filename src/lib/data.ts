@@ -155,7 +155,7 @@ export async function saveDrafts(
       year_start: d.yearStart ?? null,
       year_end: d.yearEnd ?? null,
       category: meta.category === undefined ? d.categoryGuess ?? null : meta.category,
-      site: meta.site.trim() || null,
+      site: meta.site.trim() || d.siteGuess || null,
       subjects: meta.subjects,
       tags: meta.tags,
       notes: meta.notes.trim() || null,
@@ -238,4 +238,17 @@ export async function removeMember(email: string): Promise<void> {
 
 export async function setRole(email: string, role: 'owner' | 'editor'): Promise<void> {
   must(await supabase.from('members').update({ role }).eq('email', email));
+}
+
+// ------------------------------------------------------------------ map
+export async function siteCounts(): Promise<{ site_key: string; era_id: string | null; n: number }[]> {
+  return must(await supabase.from('site_counts').select('*')) as any[];
+}
+
+/** Items whose place matches a site's name or any alias (case-insensitive). */
+export async function itemsAtSite(names: string[], eraId?: string | null, limit = 48): Promise<Item[]> {
+  const ors = names.map((n) => `site.ilike."${n.replace(/["\\%_]/g, '')}"`).join(',');
+  let req = supabase.from('items').select('*').or(ors).order('created_at', { ascending: false }).limit(limit);
+  if (eraId) req = req.eq('era_id', eraId);
+  return must(await req) as Item[];
 }

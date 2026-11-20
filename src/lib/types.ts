@@ -73,6 +73,7 @@ export interface Draft {
   description?: string | null;
   eraGuess?: string | null;
   categoryGuess?: string | null;
+  siteGuess?: string | null;
 }
 
 export interface SearchResult {
@@ -90,5 +91,6 @@ export interface SearchResult {
   yearEnd: number | null;
   eraGuess: string | null;
   categoryGuess: string | null;
+  siteGuess: string | null;
   description: string | null;
 }

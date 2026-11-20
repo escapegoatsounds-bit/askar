@@ -1,4 +1,4 @@
-import { NavLink, Route, Routes, Link } from 'react-router-dom';
+import { NavLink, Route, Routes, Link, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth';
 import { configured, supabase } from './lib/supabase';
 import Login from './pages/Login';
@@ -12,6 +12,8 @@ import BoardPage from './pages/BoardPage';
 import ItemPage from './pages/ItemPage';
 import Members from './pages/Members';
 import SharePage from './pages/SharePage';
+import { lazy, Suspense } from 'react';
+const MapPage = lazy(() => import('./pages/MapPage'));
 import { Ankh } from './components/Ankh';
 
 export default function App() {
@@ -52,10 +54,10 @@ function Shell() {
   const { role } = useAuth();
   const nav: { to: string; label: string; icon: React.ReactNode; end?: boolean }[] = [
     { to: '/', label: 'Timeline', icon: <Ankh size={20} />, end: true },
+    { to: '/map', label: 'Map', icon: '🗺' },
     { to: '/discover', label: 'Discover', icon: '🔎' },
     { to: '/add', label: 'Add', icon: '＋' },
     { to: '/boards', label: 'Boards', icon: '▦' },
-    { to: '/library', label: 'Library', icon: '▤' },
   ];
   return (
     <div className="shell">
@@ -70,19 +72,22 @@ function Shell() {
               {n.label}
             </NavLink>
           ))}
+          <NavLink to="/library">Library</NavLink>
           {role === 'owner' && <NavLink to="/members">Members</NavLink>}
         </nav>
         <div className="topbar-right">
+          <NavLink to="/library" className="only-mobile icon-link" aria-label="Library">▤</NavLink>
           {role === 'owner' && <NavLink to="/members" className="only-mobile icon-link" aria-label="Members">👥</NavLink>}
           <button className="ghost small" onClick={() => supabase.auth.signOut()}>Sign out</button>
         </div>
       </header>
-      <main className="main">
+      <main className={`main ${useLocation().pathname === '/map' ? 'full' : ''}`}>
         <Routes>
           <Route path="/" element={<Timeline />} />
           <Route path="/era/:eraId" element={<Browse />} />
           <Route path="/library" element={<Browse />} />
           <Route path="/discover" element={<Discover />} />
+          <Route path="/map" element={<Suspense fallback={<div className="center-screen"><Ankh className="spin-slow" size={40} /></div>}><MapPage /></Suspense>} />
           <Route path="/add" element={<AddPage />} />
           <Route path="/share" element={<SharePage />} />
           <Route path="/boards" element={<Boards />} />

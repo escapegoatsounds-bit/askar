@@ -8,6 +8,7 @@ A shared, invite-only visual archive for 7,000 years of Egyptian history. It wor
 - **Discover**: search open collections from one box. Sources: The Met, Wikimedia Commons, Cleveland Museum of Art, Smithsonian, Library of Congress photos, Chronicling America newspapers, Internet Archive films/scans and Sketchfab 3D scans. License, credit, date and source link are saved with every find. Era and category are guessed from the object's dates.
 - **Add**: upload from your camera roll, or paste a link to a web page (pick which images to keep), an image or a YouTube video.
 - **Android share menu**: once installed, *Askar* appears in the Share menu of Gallery, Chrome and other apps.
+- **Map**: 56 sites from Kerma to Rosetta on a Mapbox map. Pins grow with the number of finds saved there. A time scrubber (with ▶ play) moves through the eras, there's a satellite view, and tapping a site opens its finds. When you save something, the site is detected from the museum's title and description, so finds land on the map without extra typing. Item pages show a mini-map.
 - **Boards**: *Mood boards* for an age or place. *Reconstruction boards* for one subject (a king, a statue, a temple), with an angle checklist (front, profiles, ¾, back, top, scale, CT/3D, colour evidence…) that shows which views are still missing.
 - **Members**: invite-only. Owners add collaborators by email, and collaborators sign in with a one-time link or code (no passwords).
 
@@ -37,6 +38,7 @@ A shared, invite-only visual archive for 7,000 years of Egyptian history. It wor
 2. Add **Environment Variables**:
    - `VITE_SUPABASE_URL`: the Project URL
    - `VITE_SUPABASE_ANON_KEY`: the anon key
+   - `VITE_MAPBOX_TOKEN`: a Mapbox public token (`pk.…`). For the live site, create one restricted to your site's URL at <https://account.mapbox.com/access-tokens/>
    - `SMITHSONIAN_API_KEY` (optional): a free key from <https://api.data.gov/signup/>
 3. Deploy, then put the resulting URL into Supabase's *Site URL* (step 1.4).
 
