@@ -106,6 +106,7 @@ export interface Project {
   description: string | null;
   emoji: string | null;
   color: string | null;
+  desk_sync?: boolean;
   created_by_email: string | null;
   created_at: string;
   updated_at: string;

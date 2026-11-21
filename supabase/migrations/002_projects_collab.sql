@@ -163,3 +163,33 @@ create policy media_delete on storage.objects for delete using (bucket_id = 'med
 
 -- Live collaboration (Supabase Realtime respects the policies above)
 alter publication supabase_realtime add table public.board_items, public.boards, public.folders, public.projects;
+
+-- =====================================================================
+-- 003: Bridge to the Land of Rebirth Production Desk (applied 2026-11-21)
+-- Pins in projects with desk_sync = true are queued here with a JPEG
+-- (data URL) and metadata; the Desk pulls them via the Supabase connector.
+-- =====================================================================
+alter table public.projects add column if not exists desk_sync boolean not null default false;
+create table if not exists public.desk_outbox (
+  id uuid primary key default gen_random_uuid(),
+  item_id uuid not null unique references public.items(id) on delete cascade,
+  project_id uuid not null references public.projects(id) on delete cascade,
+  image_b64 text not null,
+  title text, notes text, era_id text, desk_age text, site text, category text,
+  source_name text, source_url text, license text, credit text,
+  tags text[] not null default '{}',
+  added_by_email text default lower(auth.jwt() ->> 'email'),
+  added_at timestamptz not null default now(),
+  synced_at timestamptz,
+  desk_mood_id text
+);
+create index if not exists desk_outbox_pending_idx on public.desk_outbox (added_at) where synced_at is null;
+alter table public.desk_outbox enable row level security;
+drop policy if exists outbox_select on public.desk_outbox;
+drop policy if exists outbox_insert on public.desk_outbox;
+drop policy if exists outbox_update on public.desk_outbox;
+drop policy if exists outbox_delete on public.desk_outbox;
+create policy outbox_select on public.desk_outbox for select using (public.can_view_project(project_id));
+create policy outbox_insert on public.desk_outbox for insert with check (public.can_edit_project(project_id));
+create policy outbox_update on public.desk_outbox for update using (public.can_edit_project(project_id));
+create policy outbox_delete on public.desk_outbox for delete using (public.can_edit_project(project_id));

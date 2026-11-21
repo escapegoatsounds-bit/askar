@@ -23,6 +23,7 @@ import { useAuth } from '../lib/auth';
 import type { BoardWithMeta, Folder } from '../lib/types';
 import { BoardCover } from '../components/BoardCover';
 import { DropZone } from '../components/DropZone';
+import { backfillProject, deskStatus, forgetDeskCache } from '../lib/desk';
 
 type Role = 'owner' | 'editor' | 'viewer';
 
@@ -132,13 +133,17 @@ export default function ProjectPage() {
           </div>
         </section>
 
+        {p?.desk_sync && <DeskPanel pid={pid} canEdit={canEdit} />}
+
         {panel === 'people' && <People pid={pid} isOwner={isOwner} me={email} members={members.data || []} reload={members.reload} />}
         {panel === 'settings' && p && (
           <Settings
             name={p.name}
             emoji={p.emoji ?? '📁'}
             description={p.description ?? ''}
+            deskSync={!!p.desk_sync}
             onSave={async (patch) => {
+              forgetDeskCache();
               project.setData(await updateProject(pid, patch));
               setPanel('none');
             }}
@@ -336,19 +341,64 @@ function People({ pid, isOwner, me, members, reload }: { pid: string; isOwner: b
   );
 }
 
-function Settings({ name, emoji, description, onSave, onDelete }: { name: string; emoji: string; description: string; onSave: (p: any) => void; onDelete: () => void }) {
+function Settings({ name, emoji, description, deskSync, onSave, onDelete }: { name: string; emoji: string; description: string; deskSync: boolean; onSave: (p: any) => void; onDelete: () => void }) {
+  const [desk, setDesk] = useState(deskSync);
   const [n, setN] = useState(name);
   const [e, setE] = useState(emoji);
   const [d, setD] = useState(description);
   return (
-    <form className="card form-grid" onSubmit={(ev) => { ev.preventDefault(); onSave({ name: n.trim(), emoji: e, description: d.trim() || null }); }}>
+    <form className="card form-grid" onSubmit={(ev) => { ev.preventDefault(); onSave({ name: n.trim(), emoji: e, description: d.trim() || null, desk_sync: desk }); }}>
       <label>Name<input value={n} onChange={(ev) => setN(ev.target.value)} required /></label>
       <label>Icon<input value={e} onChange={(ev) => setE(ev.target.value)} maxLength={4} /></label>
       <label className="span-2">Description<textarea rows={2} value={d} onChange={(ev) => setD(ev.target.value)} /></label>
+      <label className="inline span-2">
+        <input type="checkbox" checked={desk} onChange={(ev) => setDesk(ev.target.checked)} />
+        Send this project's pins to the Land of Rebirth Production Desk moodboard
+      </label>
       <div className="row between span-2">
         <button type="button" className="ghost danger" onClick={() => confirm(`Delete project “${name}” and its boards? Saved images stay in the library.`) && onDelete()}>Delete project</button>
         <button>Save</button>
       </div>
     </form>
+  );
+}
+
+function DeskPanel({ pid, canEdit }: { pid: string; canEdit: boolean }) {
+  const [st, setSt] = useState<{ waiting: number; synced: number } | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const refresh = () => deskStatus(pid).then(setSt).catch(() => {});
+  useEffect(() => {
+    refresh();
+    return subscribe(`desk-${pid}`, [{ table: 'board_items' }], () => setTimeout(refresh, 4000));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pid]);
+  return (
+    <section className="card desk-panel">
+      <div className="row between">
+        <div>
+          <b>🔗 Linked to the Land of Rebirth Production Desk</b>
+          <p className="muted small" style={{ margin: '0.2rem 0 0' }}>
+            Every image you pin in this project is queued for the Desk's moodboard with its title, notes, era and source.
+            In the Desk, press <b>⟳ Sync from Askar</b> on the Moodboard tab: Claude tags each image and it feeds your prompts.
+          </p>
+        </div>
+        <div className="desk-stats">
+          <span><b>{st?.waiting ?? '–'}</b> waiting</span>
+          <span><b>{st?.synced ?? '–'}</b> on the Desk</span>
+        </div>
+      </div>
+      {canEdit && (
+        <div className="row">
+          <button className="ghost small" disabled={!!busy} onClick={async () => {
+            setBusy('Preparing…');
+            const r = await backfillProject(pid, setBusy);
+            setBusy(r.queued || r.failed ? `Queued ${r.queued}${r.failed ? ` · ${r.failed} failed` : ''}` : 'Everything is already queued');
+            refresh();
+            setTimeout(() => setBusy(null), 4000);
+          }}>{busy ?? 'Queue pins that are missing'}</button>
+          <a className="button ghost small" href="https://claude.ai/artifact/Ae7qJiZFX6M5SD3ZNQf33S" target="_blank" rel="noreferrer">Open the Desk ↗</a>
+        </div>
+      )}
+    </section>
   );
 }

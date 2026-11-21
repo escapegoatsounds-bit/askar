@@ -478,3 +478,6 @@ button.chip.era.current { opacity: 1; outline: 2px solid var(--ink); outline-off
 .people-list .row { flex-wrap: nowrap; }
 @media (max-width: 520px) { .people-list li { flex-wrap: wrap; } }
 .special-cover { grid-template-columns: 1fr !important; grid-template-rows: 1fr !important; }
+.desk-panel { border-color: var(--gold); display: flex; flex-direction: column; gap: 0.6rem; }
+.desk-stats { display: flex; gap: 1rem; font-size: 0.85rem; color: var(--ink-2); }
+.desk-stats b { font: 600 1.4rem/1 var(--display); color: var(--gold); margin-right: 0.2rem; }

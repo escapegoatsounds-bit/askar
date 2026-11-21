@@ -220,6 +220,8 @@ export async function reorderBoard(boardId: string, itemIds: string[]): Promise<
 
 export async function setPinNote(boardId: string, itemId: string, note: string | null): Promise<void> {
   must(await supabase.from('board_items').update({ note }).eq('board_id', boardId).eq('item_id', itemId));
+  // If it's still waiting for the Desk, carry the note across too.
+  await supabase.from('desk_outbox').update({ notes: note }).eq('item_id', itemId).is('synced_at', null);
 }
 
 export async function boardsForItem(itemId: string): Promise<{ board_id: string; angle: string | null }[]> {
@@ -229,6 +231,8 @@ export async function boardsForItem(itemId: string): Promise<{ board_id: string;
 export async function addToBoard(boardId: string, itemIds: string[], angle: string | null = null): Promise<void> {
   const rows = itemIds.map((item_id) => ({ board_id: boardId, item_id, angle }));
   must(await supabase.from('board_items').upsert(rows, { onConflict: 'board_id,item_id', ignoreDuplicates: false }));
+  // Boards in a Desk-linked project also queue their pins for the Land of Rebirth Desk (in the background).
+  import('./desk').then((d) => d.queueForDesk(boardId, itemIds)).catch((e) => console.warn('[desk]', e));
 }
 
 export async function removeFromBoard(boardId: string, itemId: string): Promise<void> {
