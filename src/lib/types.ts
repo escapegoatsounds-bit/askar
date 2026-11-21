@@ -129,3 +129,34 @@ export interface ProjectMember {
 }
 
 export type BoardWithMeta = Board & { count: number; project_id: string | null; folder_id: string | null; position: number };
+
+export interface SourceRef { title?: string; url: string }
+export interface Fact { text: string; source_url?: string | null }
+export interface Ruler { name: string; title?: string | null; period?: string | null; certainty?: 'attested' | 'likely' | 'legendary' | 'unknown' | null; note?: string | null; source_url?: string | null }
+export interface Deity { name: string; role?: string | null; note?: string | null; source_url?: string | null }
+
+export interface Place {
+  id: number;
+  name: string;
+  lat: number;
+  lng: number;
+  region: string | null;
+  aliases: string[];
+  description: string | null;
+  eras: string[];
+  priority: number;
+  coords_verified: boolean;
+  wikipedia_title: string | null;
+  summary: string | null;
+  culture: string | null;
+  dates_text: string | null;
+  facts: Fact[];
+  rulers: Ruler[];
+  deities: Deity[];
+  beliefs: string | null;
+  sources: SourceRef[];
+  research_status: 'todo' | 'in_progress' | 'done' | 'needs_review';
+  research_notes: string | null;
+  researched_at: string | null;
+  research_requested_at: string | null;
+}

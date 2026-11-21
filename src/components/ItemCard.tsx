@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Item } from '../lib/types';
 import { useThumb } from '../lib/media';
@@ -18,12 +19,13 @@ export function ItemCard({ item, angle, selected, onSelect, actions, note, pin =
   by?: string | null;
 }) {
   const thumb = useThumb(item);
+  const [broken, setBroken] = useState(false);
   const era = item.era_id ? ERA_BY_ID[item.era_id] : null;
   const cat = item.category ? CATEGORY_BY_ID[item.category] : null;
   const body = (
     <>
       <div className="thumb">
-        {thumb ? <img src={thumb} alt={item.title} loading="lazy" referrerPolicy="no-referrer" /> : <div className="thumb-missing">No preview</div>}
+        {thumb && !broken ? <img src={thumb} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setBroken(true)} /> : <div className="thumb-missing">No preview</div>}
         {KIND_BADGE[item.kind] && <span className="badge kind">{KIND_BADGE[item.kind]}</span>}
         {angle && <span className="badge angle">{ANGLE_BY_ID[angle] ?? angle}</span>}
         {onSelect && <span className={`check ${selected ? 'on' : ''}`}>{selected ? '✓' : ''}</span>}

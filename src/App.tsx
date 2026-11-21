@@ -14,6 +14,8 @@ import Members from './pages/Members';
 import SharePage from './pages/SharePage';
 import Home from './pages/Home';
 import ProjectPage from './pages/ProjectPage';
+import PlacesPage from './pages/PlacesPage';
+import PlacePage from './pages/PlacePage';
 import { lazy, Suspense } from 'react';
 const MapPage = lazy(() => import('./pages/MapPage'));
 import { Ankh } from './components/Ankh';
@@ -75,11 +77,13 @@ function Shell() {
               {n.label}
             </NavLink>
           ))}
+          {team && <NavLink to="/places">Places</NavLink>}
           <NavLink to="/boards">Boards</NavLink>
           <NavLink to="/library">Library</NavLink>
           {role === 'owner' && <NavLink to="/members">Team</NavLink>}
         </nav>
         <div className="topbar-right">
+          {team && <NavLink to="/places" className="only-mobile icon-link" aria-label="Places">📍</NavLink>}
           <NavLink to="/boards" className="only-mobile icon-link" aria-label="Boards">📌</NavLink>
           <NavLink to="/library" className="only-mobile icon-link" aria-label="Library">▤</NavLink>
           {role === 'owner' && <NavLink to="/members" className="only-mobile icon-link" aria-label="Members">👥</NavLink>}
@@ -91,6 +95,8 @@ function Shell() {
           <Route path="/" element={<Home />} />
           <Route path="/timeline" element={<Timeline />} />
           <Route path="/projects/:id" element={<ProjectPage />} />
+          <Route path="/places" element={<PlacesPage />} />
+          <Route path="/places/:name" element={<PlacePage />} />
           <Route path="/era/:eraId" element={<Browse />} />
           <Route path="/library" element={<Browse />} />
           <Route path="/discover" element={<Discover />} />

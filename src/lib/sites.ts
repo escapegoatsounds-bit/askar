@@ -903,3 +903,18 @@ export function staticMapUrl(points: { lat: number; lng: number }[], opts: { w: 
   const view = points.length === 1 && opts.zoom ? `${points[0].lng},${points[0].lat},${opts.zoom},0` : 'auto';
   return `https://api.mapbox.com/styles/v1/${style}/static/${pins}/${view}/${opts.w}x${opts.h}@2x?padding=30&access_token=${MAPBOX_TOKEN}`;
 }
+
+/** Add places that exist only in the database (e.g. newly added predynastic sites) to the in-app list. */
+export function mergeSites(extra: { name: string; lat: number; lng: number; region: string | null; aliases: string[]; description: string | null; eras: string[] }[]): Site[] {
+  let added = false;
+  for (const p of extra) {
+    if (SITES.some((s) => s.name === p.name)) continue;
+    SITES.push({ name: p.name, lat: p.lat, lng: p.lng, region: p.region ?? '', aliases: p.aliases ?? [], description: p.description ?? '', eras: p.eras ?? [] });
+    added = true;
+  }
+  if (added) {
+    indexSites(SITES);
+    MATCHERS = null;
+  }
+  return SITES;
+}

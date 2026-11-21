@@ -481,3 +481,36 @@ button.chip.era.current { opacity: 1; outline: 2px solid var(--ink); outline-off
 .desk-panel { border-color: var(--gold); display: flex; flex-direction: column; gap: 0.6rem; }
 .desk-stats { display: flex; gap: 1rem; font-size: 0.85rem; color: var(--ink-2); }
 .desk-stats b { font: 600 1.4rem/1 var(--display); color: var(--gold); margin-right: 0.2rem; }
+
+/* ---------- places ---------- */
+.place-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 1.5rem; align-items: start; }
+@media (max-width: 900px) { .place-layout { grid-template-columns: 1fr; } .infobox { order: -1; } }
+.place-main section { margin-top: 1.4rem; }
+.place-main h2 { font-family: var(--display); font-size: 1.5rem; border-bottom: 1px solid var(--line); padding-bottom: 0.25rem; }
+.place-main .lead { font-size: 1.05rem; line-height: 1.65; }
+.card.soft { box-shadow: none; }
+.infobox { position: sticky; top: 72px; display: flex; flex-direction: column; gap: 0.7rem; }
+.infobox-img { border-radius: 10px; width: 100%; max-height: 240px; object-fit: cover; }
+.infobox-map { border-radius: 10px; width: 100%; }
+.facts-list { padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.45rem; }
+.src-link { font-size: 0.72rem; color: var(--ink-2); white-space: nowrap; }
+.rulers { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.6rem; }
+.ruler p { margin: 0.4rem 0 0; }
+.cert { font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 999px; }
+.cert.ok { background: color-mix(in srgb, var(--ok) 20%, transparent); color: var(--ok); }
+.cert.likely { background: color-mix(in srgb, var(--gold) 22%, transparent); color: var(--gold); }
+.cert.legend { background: color-mix(in srgb, var(--lapis) 22%, transparent); color: var(--lapis); }
+.cert.unknown { background: var(--bg-2); color: var(--ink-2); }
+.deities { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.6rem; }
+.deity { border-left: 3px solid var(--gold); padding: 0.2rem 0 0.2rem 0.7rem; }
+.deity p { margin: 0.25rem 0 0; }
+.sources-list { padding-left: 1.2rem; font-size: 0.9rem; }
+.chip.status { background: var(--bg-2); }
+.chip.status.done { background: color-mix(in srgb, var(--ok) 20%, transparent); color: var(--ok); }
+.chip.status.needs_review { background: color-mix(in srgb, var(--gold) 22%, transparent); color: var(--gold); }
+.chip.status.in_progress { background: color-mix(in srgb, var(--lapis) 22%, transparent); }
+.place-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.7rem; }
+.place-card { display: flex; flex-direction: column; gap: 0.3rem; color: var(--ink); }
+.place-card:hover { text-decoration: none; border-color: var(--gold); }
+.era-dots { display: flex; align-items: center; gap: 0.25rem; margin-top: auto; }
+.research-progress { display: flex; flex-direction: column; gap: 0.5rem; }

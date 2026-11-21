@@ -236,7 +236,7 @@ export default function Discover() {
             <div key={r.externalId} className={`item-card result ${isSel ? 'selected' : ''}`}>
               <button type="button" className="card-hit" onClick={() => (isSaved ? setZoom(r) : toggle(r))}>
                 <div className="thumb">
-                  {r.thumbUrl ? <img src={r.thumbUrl} alt={r.title} loading="lazy" referrerPolicy="no-referrer" /> : <div className="thumb-missing">No preview</div>}
+                  {r.thumbUrl ? <img src={r.thumbUrl} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { const el = e.currentTarget; el.replaceWith(Object.assign(document.createElement('div'), { className: 'thumb-missing', textContent: 'No preview' })); }} /> : <div className="thumb-missing">No preview</div>}
                   <span className="badge src">{sources.find((s) => s.id === r.source)?.label ?? r.source}</span>
                   {isSaved ? <span className="badge saved">✓ In archive</span> : <span className={`check ${isSel ? 'on' : ''}`}>{isSel ? '✓' : ''}</span>}
                 </div>

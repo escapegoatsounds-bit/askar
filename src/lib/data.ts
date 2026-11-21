@@ -1,6 +1,6 @@
 import { supabase, BUCKET } from './supabase';
 import { makeThumb, fetchRemoteImage, extFor } from './thumbs';
-import type { Board, BoardItem, BoardWithMeta, Draft, Folder, Item, Member, Project, ProjectMember } from './types';
+import type { Board, BoardItem, BoardWithMeta, Draft, Folder, Item, Member, Place, Project, ProjectMember } from './types';
 
 function must<T>(r: { data: T | null; error: { message: string } | null }): T {
   if (r.error) throw new Error(r.error.message);
@@ -352,4 +352,26 @@ export function subscribe(channel: string, tables: { table: string; filter?: str
   return () => {
     supabase.removeChannel(ch);
   };
+}
+
+// ----------------------------------------------------------------- places
+export async function listPlaces(): Promise<Place[]> {
+  return must(await supabase.from('sites').select('*').order('priority', { ascending: false }).order('name')) as Place[];
+}
+
+export async function getPlace(name: string): Promise<Place | null> {
+  const { data, error } = await supabase.from('sites').select('*').eq('name', name).maybeSingle();
+  if (error) throw new Error(error.message);
+  return data as Place | null;
+}
+
+/** Ask the scheduled research to do this place next. */
+export async function requestResearch(id: number, again = false): Promise<void> {
+  const patch: Record<string, unknown> = { research_requested_at: new Date().toISOString() };
+  if (again) patch.research_status = 'todo';
+  must(await supabase.from('sites').update(patch).eq('id', id));
+}
+
+export async function lastResearchRuns(limit = 5): Promise<{ ran_at: string; places: string[]; summary: string | null; images_added: number }[]> {
+  return must(await supabase.from('research_log').select('*').order('ran_at', { ascending: false }).limit(limit)) as any[];
 }

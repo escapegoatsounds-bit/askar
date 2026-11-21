@@ -3,8 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { ERAS, ERA_BY_ID, formatRange } from '../lib/eras';
-import { findSite, MAPBOX_TOKEN, SITES, type Site } from '../lib/sites';
-import { itemsAtSite, siteCounts } from '../lib/data';
+import { findSite, MAPBOX_TOKEN, SITES, mergeSites, type Site } from '../lib/sites';
+import { itemsAtSite, listPlaces, siteCounts } from '../lib/data';
 import type { Item } from '../lib/types';
 import { ItemCard, ItemGrid } from '../components/ItemCard';
 
@@ -34,8 +34,17 @@ export default function MapPage() {
   const [items, setItems] = useState<Item[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
+  const [sitesVersion, setSitesVersion] = useState(0);
   useEffect(() => {
     siteCounts().then(setCounts).catch((e) => setErr(e.message));
+    // Places added in the database (e.g. new predynastic sites) join the map.
+    listPlaces()
+      .then((rows) => {
+        const before = SITES.length;
+        mergeSites(rows);
+        if (SITES.length !== before) setSitesVersion((v) => v + 1);
+      })
+      .catch(() => {});
   }, []);
 
   // Saved finds per site (for the chosen era).
@@ -49,7 +58,8 @@ export default function MapPage() {
     return m;
   }, [counts, eraId]);
 
-  const activeSites = useMemo(() => SITES.filter((s) => !eraId || s.eras.includes(eraId)), [eraId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const activeSites = useMemo(() => SITES.filter((s) => !eraId || s.eras.includes(eraId)), [eraId, sitesVersion]);
 
   const geojson = useMemo(
     () => ({
@@ -73,7 +83,8 @@ export default function MapPage() {
         };
       }),
     }),
-    [eraId, perSite, selected],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [eraId, perSite, selected, sitesVersion],
   );
 
   // Create the map once.
@@ -330,8 +341,9 @@ export default function MapPage() {
             ))}
           </div>
           <div className="row">
-            <Link className="button small" to={`/discover?q=${encodeURIComponent(selected.name)}${eraId ? `&era=${eraId}` : ''}`}>
-              Find images of {selected.name}
+            <Link className="button small" to={`/places/${encodeURIComponent(selected.name)}`}>Facts, rulers & gods →</Link>
+            <Link className="button ghost small" to={`/discover?q=${encodeURIComponent(selected.name)}${eraId ? `&era=${eraId}` : ''}`}>
+              Find images
             </Link>
           </div>
           {items === null ? (
