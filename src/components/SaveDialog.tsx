@@ -11,19 +11,20 @@ import { AngleSelect, CategorySelect, EraSelect } from './Selects';
  * One dialog for every way of adding things: search results, uploads,
  * links and shares. Applies the same era/category/site/subjects/board to all.
  */
-export function SaveDialog({ drafts, onClose, onSaved, defaultEra, defaultBoard }: {
+export function SaveDialog({ drafts, onClose, onSaved, defaultEra, defaultBoard, defaultSubjects }: {
   drafts: Draft[];
   onClose: () => void;
   onSaved: (items: Item[]) => void;
   defaultEra?: string | null;
   defaultBoard?: string | null;
+  defaultSubjects?: string[];
 }) {
   const hasGuesses = drafts.some((d) => d.eraGuess);
   const hasCatGuesses = drafts.some((d) => d.categoryGuess);
   const [era, setEra] = useState<string>(defaultEra ?? (hasGuesses ? 'auto' : ''));
   const [category, setCategory] = useState<string>(hasCatGuesses ? 'auto' : '');
   const [site, setSite] = useState('');
-  const [subjects, setSubjects] = useState<string[]>([]);
+  const [subjects, setSubjects] = useState<string[]>(defaultSubjects ?? []);
   const [tags, setTags] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
   const [titles, setTitles] = useState<Record<string, string>>(() => Object.fromEntries(drafts.map((d) => [d.key, d.title])));

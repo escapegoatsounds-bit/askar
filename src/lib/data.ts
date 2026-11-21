@@ -376,3 +376,43 @@ export async function requestResearch(id: number, again = false): Promise<void> 
 export async function lastResearchRuns(limit = 5): Promise<{ ran_at: string; places: string[]; summary: string | null; images_added: number }[]> {
   return must(await supabase.from('research_log').select('*').order('ran_at', { ascending: false }).limit(limit)) as any[];
 }
+
+// ---------------------------------------------------------------- rulers
+export interface Ruler {
+  id: number;
+  slug: string;
+  name: string;
+  aliases: string[];
+  dynasty: string | null;
+  era_id: string | null;
+  reign_start: number | null;
+  reign_end: number | null;
+  certainty: 'firm' | 'approx' | 'debated';
+  is_group: boolean;
+  mummy_status: 'mummy' | 'remains' | 'disputed' | 'lost' | 'none';
+  mummy_note: string | null;
+  face_notes: string | null;
+  sort: number;
+}
+
+export async function listRulers(): Promise<Ruler[]> {
+  return must(await supabase.from('rulers').select('*').order('sort')) as Ruler[];
+}
+
+export async function getRuler(slug: string): Promise<Ruler | null> {
+  const r = await supabase.from('rulers').select('*').eq('slug', slug).maybeSingle();
+  if (r.error) throw new Error(r.error.message);
+  return r.data as Ruler | null;
+}
+
+/** Saved items about a ruler: tagged with the name (or an alias) as a subject, or with the name in the title. */
+export async function itemsForRuler(r: Ruler): Promise<Item[]> {
+  const names = [r.name, ...(r.aliases || [])];
+  const safe = r.name.replace(/[%,()]/g, ' ').trim();
+  const [a, b] = await Promise.all([
+    supabase.from('items').select('*').overlaps('subjects', names).order('created_at', { ascending: false }).limit(200),
+    safe.length > 2 ? supabase.from('items').select('*').ilike('title', `%${safe}%`).order('created_at', { ascending: false }).limit(200) : Promise.resolve({ data: [], error: null } as any),
+  ]);
+  const seen = new Set<string>();
+  return [...((a.data as Item[]) || []), ...((b.data as Item[]) || [])].filter((it) => (seen.has(it.id) ? false : (seen.add(it.id), true)));
+}

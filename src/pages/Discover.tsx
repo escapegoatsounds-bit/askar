@@ -288,6 +288,7 @@ export default function Discover() {
 
       {dialog && (
         <SaveDialog
+          defaultSubjects={params.get('subject') ? [params.get('subject')!] : undefined}
           drafts={dialog}
           defaultEra={eraParam}
           defaultBoard={boardParam}
