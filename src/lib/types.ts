@@ -25,7 +25,13 @@ export interface Item {
   notes: string | null;
   created_by_email: string | null;
   created_at: string;
+  /** Videos: 'official' (confirmed institution channel), 'pending' (awaiting fact-check), 'verified', 'partly', 'unverified'. */
+  verification?: Verification | null;
+  verification_note?: string | null;
+  verified_sources?: { title?: string; url: string }[] | null;
 }
+
+export type Verification = 'official' | 'pending' | 'verified' | 'partly' | 'unverified';
 
 export interface Board {
   id: string;
@@ -79,6 +85,8 @@ export interface Draft {
   eraGuess?: string | null;
   categoryGuess?: string | null;
   siteGuess?: string | null;
+  verification?: Verification | null;
+  officialSite?: string | null;
 }
 
 export interface SearchResult {
@@ -98,6 +106,8 @@ export interface SearchResult {
   categoryGuess: string | null;
   siteGuess: string | null;
   description: string | null;
+  official?: { name: string; site: string } | null;
+  verification?: Verification | null;
 }
 
 export interface Project {

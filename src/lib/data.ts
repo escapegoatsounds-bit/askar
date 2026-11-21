@@ -159,6 +159,7 @@ export async function saveDrafts(
       subjects: meta.subjects,
       tags: meta.tags,
       notes: meta.notes.trim() || null,
+      ...(d.verification ? { verification: d.verification, verification_note: d.officialSite ? `Published by the official channel of ${d.credit?.replace(/ \(official channel\)$/, '') || 'the institution'} (${d.officialSite}).` : 'Waiting for a fact-check against official sources.' } : {}),
     };
     const res = await supabase.from('items').insert(row).select().single();
     if (res.error) {

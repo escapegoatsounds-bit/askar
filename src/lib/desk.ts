@@ -70,7 +70,8 @@ export async function queueForDesk(boardId: string, itemIds: string[], note?: st
   let queued = 0;
   let failed = 0;
   for (const it of (items || []) as Item[]) {
-    if (it.kind !== 'image' && it.kind !== 'document') continue;
+    // Videos only reach the Desk once they come from an official channel or passed a fact-check (their thumbnail is sent).
+    if (it.kind === 'video' ? !(it.verification === 'official' || it.verification === 'verified') : it.kind !== 'image' && it.kind !== 'document') continue;
     try {
       const image_b64 = await toJpegDataUrl(await itemBlob(it));
       const notes = [note, it.notes].filter(Boolean).join(' ').trim() || null;

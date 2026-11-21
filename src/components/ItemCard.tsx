@@ -4,6 +4,8 @@ import type { Item } from '../lib/types';
 import { useThumb } from '../lib/media';
 import { ERA_BY_ID } from '../lib/eras';
 import { CATEGORY_BY_ID, ANGLE_BY_ID } from '../lib/taxonomy';
+
+const VFY_LABEL: Record<string, string> = { official: '✓ Official', verified: '✓ Verified', partly: '◐ Partly verified', unverified: '✗ Unverified', pending: '… Checking' };
 import { PinButton } from './PinButton';
 
 const KIND_BADGE: Record<string, string> = { video: '▶ Video', model3d: '🧊 3D', document: '📄 Doc' };
@@ -27,6 +29,7 @@ export function ItemCard({ item, angle, selected, onSelect, actions, note, pin =
       <div className="thumb">
         {thumb && !broken ? <img src={thumb} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setBroken(true)} /> : <div className="thumb-missing">No preview</div>}
         {KIND_BADGE[item.kind] && <span className="badge kind">{KIND_BADGE[item.kind]}</span>}
+        {item.verification && <span className={`badge vfy ${item.verification}`} title={item.verification_note || ''}>{VFY_LABEL[item.verification]}</span>}
         {angle && <span className="badge angle">{ANGLE_BY_ID[angle] ?? angle}</span>}
         {onSelect && <span className={`check ${selected ? 'on' : ''}`}>{selected ? '✓' : ''}</span>}
       </div>

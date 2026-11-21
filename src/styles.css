@@ -514,3 +514,10 @@ button.chip.era.current { opacity: 1; outline: 2px solid var(--ink); outline-off
 .place-card:hover { text-decoration: none; border-color: var(--gold); }
 .era-dots { display: flex; align-items: center; gap: 0.25rem; margin-top: auto; }
 .research-progress { display: flex; flex-direction: column; gap: 0.5rem; }
+
+/* video verification badges */
+.badge.vfy { left: 6px; bottom: 6px; top: auto; font-weight: 600; }
+.badge.vfy.official, .badge.vfy.verified { background: #1f6b3a; color: #fff; }
+.badge.vfy.partly { background: #9a6a12; color: #fff; }
+.badge.vfy.pending { background: #5a5a5a; color: #fff; }
+.badge.vfy.unverified { background: #8a2a1a; color: #fff; }

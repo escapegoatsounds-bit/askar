@@ -148,6 +148,8 @@ export default function Discover() {
       eraGuess: r.eraGuess ?? eraParam,
       categoryGuess: r.categoryGuess,
       siteGuess: r.siteGuess,
+      verification: r.verification ?? null,
+      officialSite: r.official?.site ?? null,
     };
   }
 
@@ -238,6 +240,7 @@ export default function Discover() {
                 <div className="thumb">
                   {r.thumbUrl ? <img src={r.thumbUrl} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { const el = e.currentTarget; el.replaceWith(Object.assign(document.createElement('div'), { className: 'thumb-missing', textContent: 'No preview' })); }} /> : <div className="thumb-missing">No preview</div>}
                   <span className="badge src">{sources.find((s) => s.id === r.source)?.label ?? r.source}</span>
+                  {r.source === 'youtube' && <span className={`badge vfy ${r.official ? 'official' : 'pending'}`} title={r.official ? `Confirmed official channel of ${r.official.name} (${r.official.site})` : 'Not from a confirmed official channel. It will be fact-checked against official sources before it can feed the Desk.'}>{r.official ? '✓ Official' : 'Unverified'}</span>}
                   {isSaved ? <span className="badge saved">✓ In archive</span> : <span className={`check ${isSel ? 'on' : ''}`}>{isSel ? '✓' : ''}</span>}
                 </div>
                 <div className="meta">

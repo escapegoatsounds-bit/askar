@@ -5,6 +5,8 @@
 //   add_images  -> insert openly licensed images for places (ignores duplicates)
 //   reset_place -> put a place back in the queue with a note
 //   log         -> record a run summary
+//   videos      -> list videos waiting for a fact-check
+//   verify_item -> record a fact-check verdict for one item (verified / partly / unverified + sources)
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const FIELDS = new Set([
@@ -33,6 +35,25 @@ Deno.serve(async (req) => {
 
   try {
     switch (body.action) {
+      case "videos": {
+        const limit = Math.min(Math.max(Number(body.limit) || 5, 1), 10);
+        const { data, error } = await db.from("items")
+          .select("id, title, description, source_url, credit, site, era_id, created_at")
+          .eq("verification", "pending").order("created_at").limit(limit);
+        if (error) throw error;
+        return json({ videos: data });
+      }
+      case "verify_item": {
+        const v = String(body.verdict || "");
+        if (!["verified", "partly", "unverified"].includes(v)) return json({ error: "verdict must be verified, partly or unverified" }, 400);
+        const sources = Array.isArray(body.sources) ? body.sources.filter((x: any) => x && /^https:\/\//.test(String(x.url))).slice(0, 10).map((x: any) => ({ title: String(x.title || "").slice(0, 200), url: String(x.url).slice(0, 500) })) : [];
+        if (v !== "unverified" && !sources.length) return json({ error: "a verified or partly verified verdict needs at least one official https source" }, 400);
+        const { error } = await db.from("items").update({
+          verification: v, verification_note: String(body.note || "").slice(0, 1500) || null, verified_sources: sources, verified_at: new Date().toISOString(),
+        }).eq("id", String(body.id)).eq("verification", "pending");
+        if (error) throw error;
+        return json({ ok: true });
+      }
       case "next": {
         const limit = Math.min(Math.max(Number(body.limit) || 5, 1), 10);
         const { data, error } = await db

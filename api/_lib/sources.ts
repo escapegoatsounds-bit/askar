@@ -6,6 +6,7 @@ import { fetchWithTimeout } from './safeUrl.js';
 import { guessEra, parseYears } from '../../src/lib/eras.js';
 import { guessCategory } from '../../src/lib/taxonomy.js';
 import { findSiteInText } from '../../src/lib/sites.js';
+import { officialChannels } from './trustedChannels.js';
 
 export interface SourceResult {
   source: string;
@@ -24,6 +25,10 @@ export interface SourceResult {
   categoryGuess: string | null;
   siteGuess: string | null;
   description: string | null;
+  /** Set when the result comes from a channel confirmed as an institution's official one. */
+  official?: { name: string; site: string } | null;
+  /** 'official' = from a confirmed official channel; 'pending' = must be fact-checked before it can feed the Desk. */
+  verification?: 'official' | 'pending' | null;
 }
 
 export interface SearchOpts {
@@ -604,5 +609,58 @@ const pixabay: SourceDef = {
   },
 };
 
-export const SOURCES: SourceDef[] = [met, commons, cleveland, artic, openverse, brave, unsplash, pexels, pixabay, nasa, smithsonian, locPhotos, locNews, archive, sketchfab];
+// ------------------------------------------------------------- YouTube (key)
+const youtube: SourceDef = {
+  id: 'youtube',
+  group: 'both',
+  label: 'YouTube',
+  note: 'Videos. Ones from confirmed official channels (museums, universities, the antiquities ministry) get an Official badge; every other video is fact-checked before it can feed the Desk. Needs YOUTUBE_API_KEY.',
+  enabled: () => !!process.env.YOUTUBE_API_KEY,
+  async search({ q, page, egyptOnly }) {
+    const key = process.env.YOUTUBE_API_KEY || '';
+    if (page > 1) return []; // each search costs quota; two pages are plenty
+    const query = egyptOnly && !/egypt/i.test(q) ? `${q} ancient egypt` : q;
+    const official = await officialChannels(key, getJson);
+    const params = new URLSearchParams({ part: 'snippet', type: 'video', maxResults: String(PER_PAGE), q: query, safeSearch: 'strict', key });
+    if (page === 1) {
+      // second page: only the official channels' own uploads on this topic
+      const ids = [...official.keys()];
+      if (!ids.length) return [];
+      const batches = await Promise.allSettled(
+        ids.slice(0, 6).map((cid) => getJson(`https://www.googleapis.com/youtube/v3/search?${new URLSearchParams({ part: 'snippet', type: 'video', maxResults: '4', q: query, channelId: cid, key })}`)),
+      );
+      return batches.flatMap((b) => (b.status === 'fulfilled' ? b.value.items || [] : [])).map((v: any) => ytResult(v, official));
+    }
+    const d = await getJson(`https://www.googleapis.com/youtube/v3/search?${params}`);
+    return (d.items || []).map((v: any) => ytResult(v, official)).sort((a: SourceResult, b: SourceResult) => (b.official ? 1 : 0) - (a.official ? 1 : 0));
+  },
+};
+
+function ytResult(v: any, official: Map<string, { name: string; site: string }>): SourceResult {
+  const id = v.id?.videoId;
+  const sn = v.snippet || {};
+  const off = official.get(sn.channelId) || null;
+  const thumb = sn.thumbnails?.high?.url || sn.thumbnails?.medium?.url || sn.thumbnails?.default?.url || null;
+  return {
+    ...finish({
+      source: 'youtube',
+      externalId: `youtube:${id}`,
+      kind: 'video',
+      title: stripHtml(sn.title) || 'YouTube video',
+      thumbUrl: thumb,
+      mediaUrl: thumb,
+      pageUrl: `https://www.youtube.com/watch?v=${id}`,
+      license: 'YouTube Standard License (link and embed only)',
+      credit: off ? `${off.name} (official channel)` : sn.channelTitle || null,
+      dateText: null,
+      yearStart: null,
+      yearEnd: null,
+      description: stripHtml(sn.description),
+    }),
+    official: off,
+    verification: off ? 'official' : 'pending',
+  };
+}
+
+export const SOURCES: SourceDef[] = [met, commons, cleveland, artic, openverse, brave, unsplash, pexels, pixabay, nasa, smithsonian, locPhotos, locNews, archive, sketchfab, youtube];
 export const SOURCE_BY_ID: Record<string, SourceDef> = Object.fromEntries(SOURCES.map((s) => [s.id, s]));
