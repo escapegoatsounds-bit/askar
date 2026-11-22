@@ -1,0 +1,69 @@
+{
+  "about": "Name reference for Land of Rebirth. 'attested' = the name is recorded for real people of that era (examples given). 'reconstructed' = built from Egyptian words of a later period because no names survive from before writing (c. 3200 BC). Meanings are the usual Egyptological glosses; spellings are conventional English transliterations.",
+  "eras": {
+    "prehistoric (before c. 3200 BC)": {
+      "status": "reconstructed",
+      "note": "No personal names survive. Use short names built from basic Egyptian words, and say so in the codex.",
+      "female": [
+        {"name": "Nebet", "meaning": "lady, mistress"},
+        {"name": "Merit", "meaning": "beloved"},
+        {"name": "Nefret", "meaning": "beautiful one"},
+        {"name": "Ankhet", "meaning": "the living one"},
+        {"name": "Seneb", "meaning": "healthy, well (used for both sexes later)"}
+      ],
+      "male_or_child": [
+        {"name": "Ankh", "meaning": "life"},
+        {"name": "Wedja", "meaning": "whole, sound, safe"},
+        {"name": "Nefer", "meaning": "good, beautiful"},
+        {"name": "Tjau", "meaning": "breath, wind"},
+        {"name": "Iteru", "meaning": "river (a nickname for a child saved by the river)"}
+      ]
+    },
+    "early-dynastic (c. 3100-2686 BC)": {
+      "status": "attested",
+      "female": [{"name": "Merneith", "meaning": "beloved of Neith", "example": "First Dynasty queen/regent"}, {"name": "Neithhotep", "meaning": "Neith is satisfied", "example": "queen, Naqada tomb"}, {"name": "Herneith", "meaning": "Neith is content", "example": "queen, Saqqara"}],
+      "male": [{"name": "Hemaka", "example": "chancellor of King Den"}, {"name": "Merka", "example": "official of King Qa'a"}]
+    },
+    "old-kingdom (c. 2686-2181 BC)": {
+      "status": "attested",
+      "female": [{"name": "Nofret (Nefert)", "meaning": "beautiful", "example": "wife of Rahotep, Meidum"}, {"name": "Meresankh", "meaning": "she loves life"}, {"name": "Hetepheres", "meaning": "her face is content"}, {"name": "Iput"}, {"name": "Khamerernebty"}],
+      "male": [{"name": "Rahotep", "meaning": "Ra is satisfied"}, {"name": "Hemiunu", "example": "Great Pyramid architect"}, {"name": "Seneb", "meaning": "healthy", "example": "dwarf official"}, {"name": "Ti (Ty)"}, {"name": "Ptahhotep", "meaning": "Ptah is satisfied"}, {"name": "Kaaper"}, {"name": "Mereruka"}, {"name": "Weni"}, {"name": "Harkhuf"}, {"name": "Merer", "example": "inspector, Diary of Merer"}, {"name": "Khnumhotep", "meaning": "Khnum is satisfied"}, {"name": "Niankhkhnum"}]
+    },
+    "middle-kingdom (c. 2055-1650 BC)": {
+      "status": "attested",
+      "female": [{"name": "Senet"}, {"name": "Sitre", "meaning": "daughter of Ra"}, {"name": "Sithathoriunet", "meaning": "daughter of Hathor of Dendera"}, {"name": "Mereret"}],
+      "male": [{"name": "Heqanakht", "example": "farmer-priest, letters"}, {"name": "Senbi"}, {"name": "Sobekhotep", "meaning": "Sobek is satisfied"}, {"name": "Djehutihotep", "meaning": "Thoth is satisfied"}, {"name": "Ameny"}, {"name": "Sinuhe", "meaning": "son of the sycamore", "example": "literary hero"}]
+    },
+    "new-kingdom (c. 1550-1069 BC)": {
+      "status": "attested",
+      "female": [{"name": "Merit", "meaning": "beloved", "example": "wife of the architect Kha"}, {"name": "Iyneferti", "example": "wife of Sennedjem, Deir el-Medina"}, {"name": "Tiye"}, {"name": "Mutnofret", "meaning": "Mut is beautiful"}, {"name": "Hatnefer"}, {"name": "Henutmehyt"}],
+      "male": [{"name": "Ahmose", "meaning": "the moon is born"}, {"name": "Nebamun", "meaning": "my lord is Amun"}, {"name": "Sennedjem", "example": "Deir el-Medina workman"}, {"name": "Paneb", "example": "Deir el-Medina foreman"}, {"name": "Kha", "example": "architect"}, {"name": "Nakht", "meaning": "strong"}, {"name": "Huy"}, {"name": "Kenamun"}]
+    },
+    "late-period (c. 664-332 BC)": {
+      "status": "attested",
+      "female": [{"name": "Taheretenbastet"}, {"name": "Nitocris (Nitiqret)"}],
+      "male": [{"name": "Psamtik"}, {"name": "Udjahorresnet"}, {"name": "Padiaset", "meaning": "the one Isis gave"}, {"name": "Djedhor"}]
+    },
+    "ptolemaic-roman (332 BC - AD 395)": {
+      "status": "attested",
+      "note": "Greek names for officials and townspeople; Egyptian names in villages, often in Greek spelling.",
+      "female": [{"name": "Taesis"}, {"name": "Thermouthis"}, {"name": "Isidora"}, {"name": "Tasoucharion"}],
+      "male": [{"name": "Herakleides"}, {"name": "Petosiris"}, {"name": "Pakhom (Pachomius)"}, {"name": "Harpokration"}, {"name": "Zenon", "example": "estate manager, Zenon archive"}]
+    },
+    "coptic-byzantine (AD 395-641)": {
+      "status": "attested",
+      "female": [{"name": "Maria"}, {"name": "Tsenoute"}, {"name": "Tamar"}],
+      "male": [{"name": "Shenoute"}, {"name": "Besa"}, {"name": "Pamoun"}, {"name": "Apa Phib"}, {"name": "Pshoi"}]
+    },
+    "islamic (AD 641 onward)": {
+      "status": "attested",
+      "female": [{"name": "Fatima"}, {"name": "Khadija"}, {"name": "Zaynab"}, {"name": "Sitt al-Mulk", "example": "Fatimid princess"}],
+      "male": [{"name": "Ahmad"}, {"name": "Yusuf"}, {"name": "Umar"}, {"name": "Hasan"}, {"name": "Mahmud"}],
+      "note": "Coptic names stay in use among Egyptian Christians in every later period."
+    }
+  },
+  "episode_cast": [
+    {"episode": 1, "role": "mother, narrator", "name": "Nebet", "status": "reconstructed", "alternatives": ["Merit", "Nefret", "Ankhet"]},
+    {"episode": 1, "role": "baby", "name": "Wedja", "status": "reconstructed", "alternatives": ["Ankh", "Tjau", "Iteru"]}
+  ]
+}
