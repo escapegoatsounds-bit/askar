@@ -22,7 +22,8 @@ function json(body: unknown, status = 200) {
 Deno.serve(async (req) => {
   const expected = Deno.env.get("RESEARCH_TOKEN") || "";
   const got = req.headers.get("x-research-token") || "";
-  if (expected.length < 16 || got !== expected) return json({ error: "unauthorized" }, 401);
+  // Diagnostics only reveal lengths, never values.
+  if (expected.length < 16 || got !== expected) return json({ error: "unauthorized", secret_set: expected.length >= 16, secret_len: expected.length, token_len: got.length }, 401);
   if (req.method !== "POST") return json({ error: "POST only" }, 405);
 
   const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
