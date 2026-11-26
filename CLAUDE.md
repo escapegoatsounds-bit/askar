@@ -21,6 +21,7 @@ You are continuing work for the owner of this repo on two connected tools for **
 ## Where the data is
 - **Full backup zip** `LandOfRebirth-backup-2026-11-26.zip` (48 MB), given to the owner to keep on their PC:
   `askar/askar-database.json` (all Askar tables), `desk/database/<collection>/<id>.json` (every Desk record), `desk/uploaded-files/` (40 images + 1 video, named by asset id), `desk/page/` (the Desk app), `names.json`, `README.txt`.
+- **Newer than the zip:** `data/desk-updates-2026-11-26/` holds the rebuilt Episode 1 and the Nebet/Wedja lore cards. Import the zip first, then overwrite with these.
 - Data-only copy (1 MB) in Google Drive folder "Land of Rebirth · NotebookLM".
 - `docs/names.json`: names by era (attested vs reconstructed) and the Episode 1 cast.
 
