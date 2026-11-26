@@ -42,7 +42,9 @@ Tell the owner honestly what is lost locally: phone access, the cloud 12-hourly 
 ## Episode 1 status ("Where the Nile Breathes Life")
 - Set **c. 5300 BC**, just before the Predynastic, when the Green Sahara dried. Narrator **Nebet** (mother; reconstructed name, alternatives Merit/Nefret/Ankhet), baby **Wedja** (alt. Ankh/Tjau/Iteru).
 - Story: 3-year drought → tribe leaves the oasis for the Nile → starving lions kill the tribe → mother and baby alone → sandstorm (**soundtrack bass drop**: a vision beyond her time revealing the 16 gods her descendants will name; framed as a vision because none are attested in 5300 BC) → cave (Wadi Sura / Cave of Beasts), baby afraid of lizards ("little hands" stencils were really made with reptile feet) → fire, hand stencils → leaves for food → last rain pools + water birds lead east → baby's cry draws an eastbound herder band → the Nile → rebirth: farming the flood mud, a new people; old Nebet tells grown Wedja.
-- Soundtrack lyrics (Arabic-script Egyptian chant, 69 stray Hebrew letters were fixed) and translation are saved in the episode. The old 53 scenes still exist until "Break into frames" is pressed.
+- Soundtrack lyrics (Arabic-script Egyptian chant, 69 stray Hebrew letters were fixed) and translation are saved in the episode.
+- **Frames rebuilt (26 Nov 2026)**: 57 frames × 10 s (9.5 min), 18 fillers, written by Claude to the series bible; act cards on frame 1 and the last frame; song runs frames 12–31 with the bass drop on the sandstorm (frame 23) and the gods' vision in frames 25–30. The old 53 Amunharu frames are kept in the episode field `scenesArchive`. Lore has `character-nebet` and `character-wedja` (old `character-amunharu*` entries are still there, unused).
+- Accuracy: c. 5300 BC southern Nile people were fishers/herders/wild-grain gatherers (sown farming from c. 5200 BC in the Faiyum), so the ending shows fishing and wild grain, not fields.
 - Distance note: Wadi Sura is ~600–700 km from the Nile.
 
 ## Research pipeline (cloud; may be retired when local)
