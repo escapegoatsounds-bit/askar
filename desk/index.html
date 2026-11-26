@@ -696,6 +696,7 @@ dialog.wide{width:min(920px,94vw);max-height:90vh;overflow:auto}
 .mb-age{font-size:14px!important;letter-spacing:.03em!important;line-height:1.15!important}
 .mb-year{font-size:12px!important;opacity:.85}
 .mb-dynrow{gap:3px!important;margin-bottom:2px!important}.mb-dynrow .bsel{display:flex;gap:4px;margin:4px 0}.bsel select{flex:1;min-width:0;font-size:11.5px;padding:2px 4px}.bfill{padding:0 12px 10px}.bfill select{width:100%;font-size:12px;padding:3px 8px;border-radius:999px;border:1px dashed #8a6a3a;background:transparent;color:inherit}
+.sheet{border:1px dashed #8a6a3a;border-radius:8px;padding:8px 12px;display:flex;flex-direction:column;gap:6px}.sheet summary{cursor:pointer;padding:4px 0}.sheet[open]{gap:8px}.sheet label{display:flex;flex-direction:column;gap:3px}
 .dyn-k{display:block;font-style:normal;font-size:11px;color:#7a2a12;font-weight:700;line-height:1.1;white-space:nowrap}
 .dyn-all{font-size:11px!important;padding:2px 8px!important;min-height:0!important}
 .mb-spot{font-size:11px!important;margin-top:2px!important;line-height:1.3}.mb-spot button{font-size:11px;padding:0 6px}
@@ -1704,6 +1705,7 @@ function renderOutline(b){
   b.innerHTML=`<div class="rgrid"><div class="panel stack">
     <h2>1 · Write the story</h2>
     <p class="hint">Tell the whole episode here in your own words, like you would tell a friend: who, where, when, what happens, how it ends. No fields, no scenes. Then press <b>Break into frames</b>: Claude cuts it into frames (about ${need} at ${avg}s each), fills every technical field from the era, your Lore and the codex, and follows the series guidelines below. Review them in <b>2 · Frames</b> and open only the ones you want to change.</p>
+    ${sheetHTML(e)}
     <label>Episode theme (one line)<input data-ef="theme" value="${esc(e.theme||"")}" placeholder="e.g. how the Nile saved lives when the deserts and all hope ran dry"></label>
     <textarea id="outline" rows="16" placeholder="The story, start to finish…">${esc(e.outline||"")}</textarea>
     <div class="three">
@@ -1737,6 +1739,44 @@ function renderOutline(b){
     ${e.beats&&e.beats.length?`<ol class="beats">${e.beats.map(x=>`<li><b>${esc(x.title)}</b> <span class="hint" style="display:inline">· ${esc(x.act||"")} · ${x.duration||avg}s${x.keep!=null?" · kept":""}</span><br><span class="desc">${esc(x.summary||"")}</span></li>`).join("")}</ol>`:'<p class="hint">The beat plan appears here after Claude plans the story. It\'s the skeleton: about 3 acts, the turning points, and where the music should breathe or hit.</p>'}
    </div></div>`;
 }
+const SHEET=[["sh_when","When (age and year)","e.g. c. 5300 BC, just before the Predynastic, the Green Sahara drying",1],
+ ["sh_where","Where (start → journey → end)","e.g. a desert oasis → the red desert → Wadi Sura cave → the Nile valley",1],
+ ["sh_who","Main character = narrator (who they tell it to, and when)","e.g. Nebet, a young mother; telling her grown son years later",1],
+ ["sh_cast","Other characters","e.g. baby Wedja; her father; the eastbound herders",1],
+ ["sh_problem","The problem","e.g. no rain for three years, the oasis is dying",1],
+ ["sh_beats","Story beats: one per line, in order","- the tribe leaves the oasis\n- lions attack at a waterhole\n- a sandstorm…",8],
+ ["sh_danger","Dangers and obstacles","e.g. thirst, starving lions, the sandstorm, mirages",1],
+ ["sh_history","What the audience learns (real history)","e.g. the Green Sahara dried c. 5300 BC and its people moved to the Nile",2],
+ ["sh_culture","Arts, culture and music to show","e.g. rock paintings, ochre hand stencils, wordless chant, clay rattles",1],
+ ["sh_objects","Period objects to put in the frames","e.g. ostrich-egg canteens, grinding stones, chert blades, long-horned cattle",1],
+ ["sh_turn","Turning point / miracle","e.g. the last rain pools and the water birds; the baby's cry draws herders",1],
+ ["sh_rebirth","Ending: rebirth and new opportunity","e.g. the river people take them in; fishing and wild grain on the flood mud",1],
+ ["sh_song","Soundtrack: where it plays and where the drop hits","e.g. builds through the march and lions; drop on the sandstorm",1],
+ ["sh_egg","Easter egg (optional)","e.g. their hand stencils are the ones found in 2002",1]];
+function sheetHTML(e){return `<details class="sheet" ${e.outline?"":"open"}><summary><b>Story sheet</b> <span class="hint">fill the fields and bullets, then press <b>Write the story from this sheet</b></span></summary>
+  ${SHEET.map(([k,l,ph,rows])=>rows>1?`<label>${l}<textarea data-ef="${k}" rows="${rows}" placeholder="${esc(ph)}">${esc(e[k]||"")}</textarea></label>`:`<label>${l}<input data-ef="${k}" value="${esc(e[k]||"")}" placeholder="${esc(ph)}"></label>`).join("")}
+  <div class="row-g"><button class="btn ochre" type="button" data-act="sheetToStory">Write the story from this sheet</button><span class="hint">This fills the story box below (it replaces what is there). You can still edit the text before breaking it into frames.</span></div></details>`}
+function sheetToStory(){const e=ep();if(!e)return;const g=k=>String(e[k]||"").trim();
+  if(!SHEET.some(([k])=>g(k))){toast("Fill in at least a few fields first.");return}
+  if(e.outline&&!confirm("Replace the current story text with the one built from the sheet?"))return;
+  const beats=g("sh_beats").split(/\n+/).map(x=>x.replace(/^\s*[-•*\d.)]+\s*/,"").trim()).filter(Boolean);
+  const L=[];
+  if(g("sh_who"))L.push("NARRATOR: "+g("sh_who")+".");
+  if(g("sh_when"))L.push("WHEN: "+g("sh_when")+".");
+  if(g("sh_where"))L.push("WHERE: "+g("sh_where")+".");
+  if(g("sh_cast"))L.push("CHARACTERS: "+g("sh_cast")+".");
+  L.push("");
+  if(g("sh_problem"))L.push("THE PROBLEM: "+g("sh_problem")+".");
+  if(beats.length){L.push("","WHAT HAPPENS, IN ORDER:");beats.forEach((b,i)=>L.push(`${i+1}. ${b}`))}
+  if(g("sh_danger"))L.push("","DANGERS AND OBSTACLES: "+g("sh_danger")+".");
+  if(g("sh_turn"))L.push("TURNING POINT: "+g("sh_turn")+".");
+  if(g("sh_rebirth"))L.push("ENDING, REBIRTH AND NEW OPPORTUNITY: "+g("sh_rebirth")+".");
+  if(g("sh_history"))L.push("","WHAT THE AUDIENCE LEARNS (real history, shown through the characters, never lectured): "+g("sh_history")+".");
+  if(g("sh_culture"))L.push("ARTS, CULTURE AND MUSIC TO SHOW: "+g("sh_culture")+".");
+  if(g("sh_objects"))L.push("PERIOD OBJECTS TO PUT IN THE FRAMES: "+g("sh_objects")+".");
+  if(g("sh_song")){L.push("SOUNDTRACK: "+g("sh_song")+".");if(!e.songPlace)e.songPlace=g("sh_song")}
+  if(g("sh_egg"))L.push("EASTER EGG: "+g("sh_egg")+".");
+  e.outline=L.join("\n").replace(/\.\./g,".");markDirty();renderStab();toast("Story written from the sheet. Check it, then press Break into frames.")}
 async function aiPlan(keep){
   const e=ep(),st=STYLES[e.style]||STYLES["pre-naqada"],tgt=+e.targetMin||8,avg=+e.avgSecs||10,n=Math.round(tgt*60/avg);
   const out=($("outline")&&$("outline").value.trim())||e.outline||"";
@@ -2227,6 +2267,7 @@ app.addEventListener("click",ev=>{
   if(a==="aiResearch"){aiResearch();return}
   if(a==="aiPlanExpand"){aiPlan(true);return}
   if(a==="aiPlanNew"){aiPlan(false);return}
+  if(a==="sheetToStory"){sheetToStory();return}
   if(a==="fitDur"){fitDurations();return}
   if(a==="copyAllEp"){copyText(episodeMarkdown());return}
   if(a==="dadd"){sc().dialogue.push({speaker:"",line:"",tone:""});markDirty();renderScene();return}
