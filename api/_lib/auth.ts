@@ -4,6 +4,8 @@
  * members table. Row Level Security answers truthfully for us.
  */
 export async function requireMember(req: Request): Promise<Response | null> {
+  // Local-first mode (set by vite.config.ts): the app runs only on this PC, so there is no sign-in to check.
+  if (process.env.LOR_LOCAL === '1') return null;
   const url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
   const key = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
   if (!url || !key) return json({ error: 'Server is missing Supabase settings.' }, 500);

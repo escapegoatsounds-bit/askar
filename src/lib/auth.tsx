@@ -1,66 +1,23 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import type { Session } from '@supabase/supabase-js';
-import { supabase } from './supabase';
+import { createContext, useContext, type ReactNode } from 'react';
 
+/**
+ * Local-first: there is no sign-in. The person at this PC is the owner.
+ * The shape stays the same so pages that read `role`/`email` keep working.
+ */
 interface AuthState {
   loading: boolean;
-  session: Session | null;
+  session: { access_token: string } | null;
   email: string | null;
-  role: 'owner' | 'editor' | 'guest' | null; // guest = invited to specific projects only; null = not invited
+  role: 'owner' | 'editor' | 'guest' | null;
   refresh: () => void;
 }
 
-const Ctx = createContext<AuthState>({ loading: true, session: null, email: null, role: null, refresh: () => {} });
+const LOCAL: AuthState = { loading: false, session: { access_token: 'local' }, email: 'owner@local', role: 'owner', refresh: () => {} };
+
+const Ctx = createContext<AuthState>(LOCAL);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [role, setRole] = useState<'owner' | 'editor' | 'guest' | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [tick, setTick] = useState(0);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
-    return () => data.subscription.unsubscribe();
-  }, []);
-
-  const email = session?.user?.email?.toLowerCase() ?? null;
-
-  useEffect(() => {
-    let alive = true;
-    if (!email) {
-      setRole(null);
-      // getSession resolves quickly; give it a moment before showing sign-in
-      const t = setTimeout(() => alive && setLoading(false), 300);
-      return () => {
-        alive = false;
-        clearTimeout(t);
-      };
-    }
-    setLoading(true);
-    supabase
-      .from('members')
-      .select('role')
-      .eq('email', email)
-      .maybeSingle()
-      .then(async ({ data }) => {
-        if (!alive) return;
-        if (data?.role) {
-          setRole(data.role as any);
-        } else {
-          // Not on the team: maybe invited to one or more projects.
-          const { data: ok } = await supabase.rpc('has_access');
-          if (!alive) return;
-          setRole(ok === true ? 'guest' : null);
-        }
-        setLoading(false);
-      });
-    return () => {
-      alive = false;
-    };
-  }, [email, tick]);
-
-  return <Ctx.Provider value={{ loading, session, email, role, refresh: () => setTick((t) => t + 1) }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={LOCAL}>{children}</Ctx.Provider>;
 }
 
 export const useAuth = () => useContext(Ctx);

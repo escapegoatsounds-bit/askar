@@ -1,5 +1,20 @@
 import { defineConfig, loadEnv, type Plugin, type ViteDevServer } from 'vite';
 import react from '@vitejs/plugin-react';
+// @ts-ignore plain JS module (also used by the standalone launcher later)
+import { handle as handleLocal } from './local/store.mjs';
+
+/** Local-first storage: /local/* answers database + file requests from disk. */
+function localStore(): Plugin {
+  return {
+    name: 'local-store',
+    configureServer(server: ViteDevServer) {
+      server.middlewares.use(async (req, res, next) => {
+        if (!req.url || !req.url.startsWith('/local/')) return next();
+        await handleLocal(req, res);
+      });
+    },
+  };
+}
 
 /**
  * In production, files in /api run as Vercel serverless functions.
@@ -47,5 +62,7 @@ function devApi(): Plugin {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   for (const [k, v] of Object.entries(env)) if (!(k in process.env)) process.env[k] = v;
-  return { plugins: [react(), devApi()] };
+  process.env.LOR_LOCAL = '1';
+  // host 'localhost' keeps the archive private to this PC (not reachable from the network).
+  return { plugins: [react(), localStore(), devApi()], server: { host: 'localhost', port: 5173, strictPort: true } };
 });
