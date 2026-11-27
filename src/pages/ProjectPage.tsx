@@ -376,7 +376,7 @@ function DeskPanel({ pid, canEdit }: { pid: string; canEdit: boolean }) {
           <b>🔗 Linked to the Land of Rebirth Production Desk</b>
           <p className="muted small" style={{ margin: '0.2rem 0 0' }}>
             Every image you pin in this project is queued for the Desk's moodboard with its title, notes, era and source.
-            In the Desk, press <b>⟳ Sync from Askar</b> on the Moodboard tab: Claude tags each image and it feeds your prompts.
+            In the Desk, press <b>⟳ Sync from Askar</b> on the Moodboard tab and they join its moodboard and prompts.
           </p>
         </div>
         <div className="desk-stats">
@@ -393,7 +393,7 @@ function DeskPanel({ pid, canEdit }: { pid: string; canEdit: boolean }) {
             refresh();
             setTimeout(() => setBusy(null), 4000);
           }}>{busy ?? 'Queue pins that are missing'}</button>
-          <a className="button ghost small" href="https://claude.ai/artifact/Ae7qJiZFX6M5SD3ZNQf33S" target="_blank" rel="noreferrer">Open the Desk ↗</a>
+          <a className="button ghost small" href="/desk/#mood" target="lor-desk">Open the Desk ↗</a>
         </div>
       )}
     </section>

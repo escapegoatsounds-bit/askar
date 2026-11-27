@@ -6,7 +6,7 @@ $ErrorActionPreference = 'Stop'
 $repo  = Split-Path -Parent $PSScriptRoot
 $port  = 5173
 $askar = "http://localhost:$port/"
-$desk  = 'https://claude.ai/artifact/Ae7qJiZFX6M5SD3ZNQf33S'   # online until the Desk is merged locally (step 3)
+$desk  = "http://localhost:$port/desk/"   # the Desk on this PC (online backup copy: https://claude.ai/artifact/Ae7qJiZFX6M5SD3ZNQf33S)
 $logDir = Join-Path $env:USERPROFILE 'Documents\Land of Rebirth Data\logs'
 New-Item -ItemType Directory -Force $logDir | Out-Null
 

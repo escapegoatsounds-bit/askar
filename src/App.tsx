@@ -53,12 +53,14 @@ function Shell() {
           <NavLink to="/rulers">Rulers</NavLink>
           <NavLink to="/boards">Boards</NavLink>
           <NavLink to="/library">Library</NavLink>
+          <a href="/desk/" target="lor-desk" title="Open the Land of Rebirth Production Desk">Desk ↗</a>
         </nav>
         <div className="topbar-right">
           {team && <NavLink to="/places" className="only-mobile icon-link" aria-label="Places">📍</NavLink>}
           <NavLink to="/rulers" className="only-mobile icon-link" aria-label="Rulers">♛</NavLink>
           <NavLink to="/boards" className="only-mobile icon-link" aria-label="Boards">📌</NavLink>
           <NavLink to="/library" className="only-mobile icon-link" aria-label="Library">▤</NavLink>
+          <a href="/desk/" target="lor-desk" className="only-mobile icon-link" aria-label="Production Desk">✎</a>
         </div>
       </header>
       <main className={`main ${useLocation().pathname === '/map' ? 'full' : ''}`}>

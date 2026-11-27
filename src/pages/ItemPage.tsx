@@ -49,6 +49,9 @@ export default function ItemPage() {
         <div className="item-media">
           {embed ? (
             <div className="embed"><iframe src={embed} title={it.title} allow="autoplay; fullscreen; xr-spatial-tracking" allowFullScreen /></div>
+          ) : it.kind === 'video' && full && /\.(mp4|webm|mov)$/i.test(it.storage_path || '') ? (
+            // a video file stored on this PC (e.g. the episode renders): play it here
+            <video src={full} controls loop playsInline style={{ width: '100%', borderRadius: 8 }} />
           ) : full ? (
             <img src={full} alt={it.title} className={zoomed ? 'zoomed' : ''} onClick={() => setZoomed(!zoomed)} referrerPolicy="no-referrer" />
           ) : (

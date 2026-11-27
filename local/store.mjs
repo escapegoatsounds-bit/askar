@@ -480,10 +480,23 @@ export function rpc(fn) {
 }
 
 // ------------------------------------------------------------------- media
-/** Resolve a storage path inside MEDIA_DIR, refusing anything that escapes it. */
+/**
+ * The episode renders stay where the owner keeps them (one folder per frame, e.g. E:\land of rebirth\Episode 1\07 Milk
+ * and blood). Storage paths starting with "renders/" read from there, READ-ONLY: Askar and the Desk show and play
+ * them, but never write or delete them (deleting a render item in Askar leaves the file alone). Override with LOR_RENDERS.
+ */
+export const RENDERS_DIR = process.env.LOR_RENDERS || 'E:\\land of rebirth';
+export const isRenderPath = (p) => /^renders\//.test(String(p || '').replace(/\\/g, '/').replace(/^\/+/, ''));
+
+/** Resolve a storage path inside MEDIA_DIR (or the renders folder for "renders/..."), refusing anything that escapes it. */
 export function mediaPath(p) {
   const clean = String(p || '').replace(/\\/g, '/').replace(/^\/+/, '');
   if (!clean || clean.split('/').some((s) => s === '..' || s === '')) return null;
+  if (isRenderPath(clean)) {
+    const base = path.resolve(RENDERS_DIR);
+    const full = path.resolve(base, clean.slice('renders/'.length));
+    return full.startsWith(base + path.sep) ? full : null;
+  }
   const full = path.resolve(MEDIA_DIR, clean);
   if (!full.startsWith(path.resolve(MEDIA_DIR) + path.sep)) return null;
   return full;
@@ -540,15 +553,38 @@ export async function handle(req, res) {
       const full = mediaPath(decodeURIComponent(url.pathname.slice('/local/files/'.length)));
       if (!full) return sendJson(res, 400, { error: 'Bad path' }), true;
       if (req.method === 'GET' || req.method === 'HEAD') {
-        if (!fs.existsSync(full)) return send(res, 404, 'Not found'), true;
+        if (!fs.existsSync(full) || !fs.statSync(full).isFile()) return send(res, 404, 'Not found'), true;
         const st = fs.statSync(full);
-        res.statusCode = 200;
         res.setHeader('Content-Type', typeFor(full));
-        res.setHeader('Content-Length', st.size);
+        res.setHeader('Accept-Ranges', 'bytes');
         res.setHeader('Cache-Control', 'private, max-age=86400');
+        // byte ranges, so videos can be scrubbed
+        const m = /^bytes=(\d*)-(\d*)$/.exec(String(req.headers.range || ''));
+        if (m && (m[1] || m[2])) {
+          const start = m[1] ? Number(m[1]) : Math.max(0, st.size - Number(m[2]));
+          const end = m[1] && m[2] ? Math.min(Number(m[2]), st.size - 1) : st.size - 1;
+          if (start >= st.size || start > end) {
+            res.statusCode = 416;
+            res.setHeader('Content-Range', `bytes */${st.size}`);
+            return res.end(), true;
+          }
+          res.statusCode = 206;
+          res.setHeader('Content-Range', `bytes ${start}-${end}/${st.size}`);
+          res.setHeader('Content-Length', end - start + 1);
+          if (req.method === 'HEAD') return res.end(), true;
+          fs.createReadStream(full, { start, end }).pipe(res);
+          return true;
+        }
+        res.statusCode = 200;
+        res.setHeader('Content-Length', st.size);
         if (req.method === 'HEAD') return res.end(), true;
         fs.createReadStream(full).pipe(res);
         return true;
+      }
+      if (isRenderPath(decodeURIComponent(url.pathname.slice('/local/files/'.length)))) {
+        // renders are read-only: never overwrite or delete the owner's files
+        if (req.method === 'DELETE') return sendJson(res, 200, { ok: true, kept: true }), true;
+        return sendJson(res, 403, { error: 'Renders are read-only here; change them in the Episode folder.' }), true;
       }
       if (req.method === 'PUT') {
         const upsert = url.searchParams.get('upsert') === '1';

@@ -1091,7 +1091,17 @@ const CAMERA={
  "droneOrbit":{label:"Drone orbit",vid:"slow drone orbit around the main subject at a steady distance, background sliding behind it",post:"Needs a 2.5D depth map or a generated clip; FG and BG move in opposite directions."},
  "droneTop":{label:"Drone top-down descent",vid:"overhead top-down drone view slowly descending toward the subject, the ground pattern growing",post:"Shoot the still as a top-down view; scale 100→118%."},
  "craneOver":{label:"Crane over the foreground",vid:"crane moves up and over a foreground element (rock, reeds, wall) to reveal the scene beyond",post:"FG layer slides down and out of frame; MG and BG rise slowly."},
- "slideThrough":{label:"Slide through the layers",vid:"slow forward glide through the scene, passing between foreground elements so they slide past both sides of the lens",post:"Cut FG into left/right layers; scale FG 100→150%, MG 100→112%, BG 100→103%."}
+ "slideThrough":{label:"Slide through the layers",vid:"slow forward glide through the scene, passing between foreground elements so they slide past both sides of the lens",post:"Cut FG into left/right layers; scale FG 100→150%, MG 100→112%, BG 100→103%."},
+ /* Moving THROUGH the frozen moment (owner request 27 Nov 2026, docs/camera-presets-frozen-time.md) */
+ "walkThrough":{label:"Walk through the frozen moment",vid:"smooth eye-level Steadicam walking forward between frozen people, passing them closely on both sides, the scene unfolding in depth",post:"Needs image-to-video AI with start/end frames; 2.5D only for short moves."},
+ "walkPast":{label:"Walk past",vid:"smooth tracking shot walking alongside a row of frozen people, the nearest faces sliding past the lens",post:"Strong parallax: FG 12%, MG 5%, BG 1%."},
+ "orbitFrozen":{label:"Frozen-time orbit (bullet time)",vid:"slow 90 to 180 degree arc around the frozen subject caught mid-action, dust and fabric drifting",post:"Keep to 90° (max 180°) or the AI redraws faces; use a character reference image."},
+ "orbitLow":{label:"Low hero orbit",vid:"low-angle 60 to 90 degree arc looking up at the frozen figure against the sky",post:"Keep to 90° (max 180°) or the AI redraws faces; use a character reference image."},
+ "pushUnder":{label:"Push under / through",vid:"camera glides forward under a raised arm, spear or between animal legs, passing through the frozen action",post:"Needs video AI."},
+ "droneDive":{label:"Drone dive to eye level",vid:"drone starts high above, dives and levels off at eye height, gliding into the scene",post:"Use start (aerial) and end (eye-level) frames."},
+ "droneReveal":{label:"Drone pull-out reveal",vid:"drone flies backwards and upward from the frozen moment until it is tiny in the vast land",post:"Scale 140→100% with outpainted edges."},
+ "parallaxPeek":{label:"Parallax peek",vid:"camera slides out from behind a near object (rock, tent pole, loom, reeds) to reveal the scene",post:"FG wipes off frame; MG/BG slide slowly."},
+ "fpv":{label:"FPV fly-through",vid:"fast fluid racing-drone path threading through gaps in the frozen chaos, banking past figures",post:"Video AI only; use for 1–2 climax frames per episode."}
 };
 const PEOPLE={
  "egyptian":{label:"Egyptian (default)",p:"The people are Egyptians of the Nile valley, with a clear Egyptian identity: warm sun-bronzed brown to olive-brown skin, men a deeper reddish-brown from outdoor work and women a lighter golden-brown, as Egyptians painted themselves in their own tombs; straight to wavy black hair; dark almond-shaped eyes; straight or gently aquiline noses; lean, wiry, compact builds of farmers, workers and soldiers. Faces should read as Egyptian, like the people in Egyptian portraiture and Egyptians today"},
@@ -1161,7 +1171,15 @@ function splitNames(v){return String(v||"").replace(/\([^)]*\)/g,"").split(/[,;/
 function loreNames(l){return[l.name,...(Array.isArray(l.aliases)?l.aliases:String(l.aliases||"").split(",")),...splitNames(l.ancientName),...splitNames(l.greek),...splitNames(l.modern)].map(x=>String(x||"").trim()).filter(x=>x.length>1)}
 function reEsc(s){return s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}
 function sceneText(s){return[s.sceneText,s.story,s.figures,s.location,s.narration,s.fg,s.mg,s.bg,...(s.dialogue||[]).map(d=>d.speaker+" "+d.line)].join(" \n ")}
-function mentions(l,text){return loreNames(l).some(n=>new RegExp("(^|[^\\p{L}\\p{N}])"+reEsc(n)+"($|[^\\p{L}\\p{N}])","iu").test(text))}
+/* Lore names that are also everyday English words ("On" for Iunu, "Set", "Nut", "Min") only count when written
+   with their capital letter and not as the first word of a sentence or line; other names match in any case. */
+const COMMON_WORDS=new Set("on an as at in is it of or to re so no do go be by up he we us me my and the one set nut min nun sun ka ba".split(" "));
+function nameIn(n,text){n=String(n||"").trim();if(!n)return false;const strict=COMMON_WORDS.has(n.toLowerCase());
+  const re=new RegExp("(^|[^\\p{L}\\p{N}])("+reEsc(n)+")(?=$|[^\\p{L}\\p{N}])",strict?"gu":"giu");let m;
+  while((m=re.exec(text))){if(!strict)return true;const pre=text.slice(0,m.index+m[1].length),tail=pre.match(/[\s"'\u201c\u2018(\[]*$/u)[0],before=pre.slice(0,pre.length-tail.length);
+    if(before&&!/\n/.test(tail)&&!/[.!?:;]$/.test(before))return true}
+  return false}
+function mentions(l,text){return loreNames(l).some(n=>nameIn(n,text))}
 function detected(s){
   const text=sceneText(s),age=styleOf(s).age,off=s.loreOff||[];
   const auto=S.lore.filter(l=>l.type!=="source"&&(!l.age||l.age===age||l.age==="any")&&mentions(l,text)).map(l=>l.id);
@@ -1299,7 +1317,10 @@ Return ONLY the JSON object of the scene.`);
 function guide(){return Object.assign({},GUIDE_DEFAULT,(S.settingsDocs&&S.settingsDocs.guide)||{})}
 function guideRules(){const g=guide();return `SERIES GUIDELINES FROM THE WRITER (these override any other style rule):\n- EPISODE FORMULA: ${g.formula}\n- ${CRAFT}\n- IMAGES: ${g.image}\n- MOTION: ${g.motion}${g.rules?"\n- OTHER RULES: "+g.rules:""}${songCtx()}${g.photo?"\n- MEDIUM: photography, not painting. Describe every frame as a real photograph (lens, light, depth of field), never as a painting or illustration.":""}${ep()&&ep().theme?"\n- THIS EPISODE'S THEME: "+ep().theme:""}`}
 async function saveGuide(patch){const d=Object.assign(guide(),patch);S.settingsDocs.guide=d;if(S.db)try{await S.db.doc("settings/guide").set(d)}catch(err){toast("Couldn't save the guidelines: "+(err&&err.message||err))}}
+/* Image composition each "through the frozen moment" camera needs (docs/camera-presets-frozen-time.md). */
+const FROZEN_DEPTH={walkThrough:"clear walkable gaps between figures, figures at several depths, a path leading into the scene",walkPast:"figures arranged in a line parallel to the camera, near figures large in the foreground",orbitFrozen:"subject free on all sides with space around it, background visible all round",orbitLow:"low camera, subject against open sky, clear silhouette",pushUnder:"a clear gap or arch in the foreground framing the action beyond",droneDive:"high vantage that still shows the subject, open space to descend into",droneReveal:"subject centred with lots of surrounding landscape, wide margins that can be outpainted",parallaxPeek:"a large dark foreground object filling one side of the frame",fpv:"many gaps and layers, action spread in depth, a clear flight path"};
 function depthFor(cam){
+  if(FROZEN_DEPTH[cam])return `Compose for the camera to move through the frozen moment (${CAMERA[cam].label}): ${FROZEN_DEPTH[cam]}.`;
   if(/^drone/.test(cam))return cam==="droneTop"?"Compose as a high top-down aerial view with clear ground patterns and shapes; leave wide margins around the subject.":"Compose as an aerial drone view from a high vantage: a near foreground element (a ridge, palm crowns, rocks) low in the frame, the land stretching to the horizon in clear receding layers, wide margins around the subject so the camera can travel.";
   if(/^crane|craneOver|monolith|tiltUp|tiltDown/.test(cam))return "Leave generous vertical room (sky above, ground below) for a crane or tilt move, with a tall foreground element at one edge to rise past.";
   if(/truck|slideThrough|tarkovsky|orbit/.test(cam))return "Build strong layered depth for a sliding camera: a large foreground element close to the lens on one or both sides (reeds, rocks, a tent pole, a doorway), a clearly separated midground subject, and a distant background, with visible gaps between the layers.";
@@ -1350,8 +1371,9 @@ function buildVideo(s){
    `Series motion rule: ${guide().motion}`,
    `Only the environment moves: ${mot.length?mot.map(m=>m.vid).join("; "):"[choose moving elements]"}${s.motionNotes?"; "+s.motionNotes:""}.`,
    seriesOf()?seriesOf().vid+".":"",
-   "All motion is slow, subtle and loop-friendly.",
+   s.camera==="fpv"?"All environment motion is slow and subtle; only the camera moves fast.":"All motion is slow, subtle and loop-friendly.",
    `Camera: ${cam.vid}${LOOKS[lk(s)]?", "+LOOKS[lk(s)].vid:""}, over ${s.duration}s.`,
+   "Time is frozen: people and animals are completely still, like a held breath; only dust, sand, water, smoke, light and fabric drift slowly; the camera moves through the still moment.",
    "Keep the painted brush texture and colours exactly. No morphing, no new objects, no style change."
   ].filter(Boolean).join("\n");
   const neg="people moving, walking, talking, blinking, lip movement, breathing, morphing faces, warping limbs, camera shake, handheld, style change, flicker, new characters";
@@ -1704,7 +1726,7 @@ function renderOutline(b){
   const need=Math.round(tgt*60/avg);
   b.innerHTML=`<div class="rgrid"><div class="panel stack">
     <h2>1 · Write the story</h2>
-    <p class="hint">Tell the whole episode here in your own words, like you would tell a friend: who, where, when, what happens, how it ends. No fields, no scenes. Then press <b>Break into frames</b>: Claude cuts it into frames (about ${need} at ${avg}s each), fills every technical field from the era, your Lore and the codex, and follows the series guidelines below. Review them in <b>2 · Frames</b> and open only the ones you want to change.</p>
+    <p class="hint">Tell the whole episode here in your own words, like you would tell a friend: who, where, when, what happens, how it ends. No fields, no scenes. Then press <b>Break into frames</b>: Claude cuts it into frames (about ${need} at ${avg}s each), fills every technical field from the era, your Lore, the codex, the age's social pyramid and everything you fed in under <b>Research → Feed this episode</b> (YouTube transcripts, notes), and follows the 4-part episode format and the series guidelines below. A short summary of the whole episode is enough. Review them in <b>2 · Frames</b> and open only the ones you want to change.</p>
     ${sheetHTML(e)}
     <label>Episode theme (one line)<input data-ef="theme" value="${esc(e.theme||"")}" placeholder="e.g. how the Nile saved lives when the deserts and all hope ran dry"></label>
     <textarea id="outline" rows="16" placeholder="The story, start to finish…">${esc(e.outline||"")}</textarea>
@@ -1758,7 +1780,7 @@ function sheetHTML(e){return `<details class="sheet" ${e.outline?"":"open"}><sum
   <div class="row-g"><button class="btn ochre" type="button" data-act="sheetToStory">Write the story from this sheet</button><span class="hint">This fills the story box below (it replaces what is there). You can still edit the text before breaking it into frames.</span></div></details>`}
 function sheetToStory(){const e=ep();if(!e)return;const g=k=>String(e[k]||"").trim();
   if(!SHEET.some(([k])=>g(k))){toast("Fill in at least a few fields first.");return}
-  if(e.outline&&!confirm("Replace the current story text with the one built from the sheet?"))return;
+  if(e.outline&&!(S.sheetArm&&Date.now()-S.sheetArm<6000)){S.sheetArm=Date.now();const b=document.querySelector('[data-act="sheetToStory"]');if(b){b.textContent="Click again to replace the current story";setTimeout(()=>{if(b.isConnected&&Date.now()-S.sheetArm>=5900)b.textContent="Write the story from this sheet"},6000)}toast("This replaces the story text below. Click the button again within 6 seconds to confirm.");return}S.sheetArm=0;
   const beats=g("sh_beats").split(/\n+/).map(x=>x.replace(/^\s*[-•*\d.)]+\s*/,"").trim()).filter(Boolean);
   const L=[];
   if(g("sh_who"))L.push("NARRATOR: "+g("sh_who")+".");
@@ -1794,9 +1816,9 @@ ERA: ${st.label}. Way of life: ${st.life}. Banned: ${st.banned}.
 ${loreContext(st.age)}
 OUTLINE: """${out}"""
 ${keep?`EXISTING SCENES (keep all of them, in this order, and reference them by index):\n${existing}\n`:""}
-Plan a beat sheet of about ${n} scenes for a ${tgt}-minute video (total durations about ${tgt*60} seconds; each 6-25 s, average ${avg}; quiet visual beats with no narration can be 6-8 s, dialogue moments up to 22 s). A 10-minute film needs roughly 45-60 shots. Use four acts (world, pressure, ordeal, arrival) with a clear rise, a climax and a quiet resolution. Vary the rhythm: breathing scenes, dense scenes, one or two silent visual beats. Every beat must be a single frozen visual moment.
+Plan a beat sheet of about ${n} scenes for a ${tgt}-minute video (total durations about ${tgt*60} seconds; each 6-25 s, average ${avg}; quiet visual beats with no narration can be 6-8 s, dialogue moments up to 22 s). A 10-minute film needs roughly 45-60 shots. ${typeof partsGuide==="function"?partsGuide(tgt):"Use four acts (world, pressure, ordeal, arrival) with a clear rise, a climax and a quiet resolution."} Vary the rhythm: breathing scenes, dense scenes, one or two silent visual beats. Every beat must be a single frozen visual moment.
 ${keep?'Include every existing scene as {"keep": index}; add new beats between and around them.':""}
-Return ONLY JSON: {"beats":[{"keep":number|null,"title":string,"summary":"one sentence: the frozen moment and what it means","duration":number,"act":"Act 1|Act 2|Act 3|Act 4"}]}`);
+Return ONLY JSON: {"beats":[{"keep":number|null,"title":string,"summary":"one sentence: the frozen moment and what it means","duration":number,"act":"Part 1|Part 2|Part 3|Part 4"}]}`);
     const beats=(plan&&Array.isArray(plan.beats))?plan.beats:[];if(!beats.length)throw new Error("No beat plan came back.");
     e.beats=beats.map(x=>({keep:Number.isInteger(x.keep)?x.keep:null,title:x.title||"",summary:x.summary||"",duration:Math.max(6,Math.min(40,+x.duration||avg)),act:x.act||""}));
     markDirty();
@@ -1967,6 +1989,7 @@ function renderResearch(b){
   const ev=e.scenes.map((s,i)=>{const x=evidence(s);return`<tr><td>${i+1}</td><td>${esc(s.title)}</td><td>${x.att}</td><td>${x.plaus}</td><td>${x.art}</td><td>${x.src.length}</td><td>${x.att+x.src.length>=2?'<span class="pill ok">Grounded</span>':x.att+x.src.length===1?'<span class="pill warn">Thin</span>':'<span class="pill todo">Unsourced</span>'}</td></tr>`}).join("");
   b.innerHTML=`<div class="rgrid">
    <div class="stack">
+    ${typeof feedPanel==="function"?feedPanel(e):""}
     <div class="panel stack">
       <div class="row-g" style="justify-content:space-between"><h2 style="margin:0">Research brief</h2>${S.sample?`<button class="btn ochre sm" type="button" data-act="aiResearch">${r.brief?"Refresh brief":"Research this story"}</button>`:""}</div>
       <p class="hint">Claude reads your logline, outline and scenes, plus this era's Lore, sources and codex. It returns facts to build on, anachronisms to avoid, visual motifs and the sound palette. Treat it as a starting point and check the sources.</p>
@@ -3778,12 +3801,17 @@ function renderAtlas(){
 function atSize(){const w=$("mapwrap");if(!w)return;const tl=$("tlbar"),tlH=(tl&&tl.offsetHeight?tl.offsetHeight:190)+24;
   const auto=innerWidth<=700?Math.round(Math.max(300,innerHeight*0.6)):Math.round(Math.max(380,innerHeight-tlH-8)),mh=S.at.mapH;w.style.height=(mh?Math.round(Math.max(110,Math.min(innerHeight-90,mh))):auto)+"px"}
 let _hintT=0;function atWheelHint(){const h=$("mapHint");if(!h)return;h.classList.add("on");clearTimeout(_hintT);_hintT=setTimeout(()=>h.classList.remove("on"),1500)}
-function atFit(instant,age){const G=S.at.geo,w=$("mapwrap");if(!G||!w)return;const W=w.clientWidth,H=w.clientHeight;
+function atFit(instant,age){const G=S.at.geo,w=$("mapwrap");if(!G||!w)return;const W=w.clientWidth,H=w.clientHeight;if(!W||!H){atFitLater(age);return}
   if(age&&AGEFOCUS[age]){const[la,lo,k]=AGEFOCUS[age];const kk=Math.max(W/G.W,k*150/G.K);const[x,y]=atXY(la,lo);atSet(kk,W/2-x*kk,H/2-y*kk,!instant);return}
   const k=W/G.W,[cx,cy]=atXY(31.5,32);atSet(k,0,H/2-cy*k,!instant)}
 function atClamp(){const G=S.at.geo,w=$("mapwrap");const W=w.clientWidth,H=w.clientHeight,k=S.at.k;
   const mw=G.W*k,mh=G.H*k;S.at.x=Math.min(W*0.45,Math.max(W*0.55-mw,S.at.x));S.at.y=Math.min(H*0.45,Math.max(H*0.55-mh,S.at.y))}
-function atSet(k,x,y,anim){const G=S.at.geo,w=$("mapwrap");const kmin=Math.min(w.clientWidth/G.W,w.clientHeight/G.H)*0.45;S.at.k=Math.max(kmin,Math.min(6,k));S.at.x=x;S.at.y=y;atClamp();
+/* The map can arrive while its frame has no size yet (window still opening, or hidden): fit it as soon as the
+   frame gets a size instead of zooming to 0, which left the map empty until reload. */
+let _atFitRO=null;function atFitLater(age){const w=$("mapwrap");if(!w)return;if(_atFitRO)_atFitRO.disconnect();
+  if(typeof ResizeObserver!=="function"){setTimeout(()=>atFit(true,age),400);return}
+  _atFitRO=new ResizeObserver(()=>{if(w.clientWidth&&w.clientHeight){_atFitRO.disconnect();_atFitRO=null;atFit(true,age)}});_atFitRO.observe(w)}
+function atSet(k,x,y,anim){const G=S.at.geo,w=$("mapwrap");if(!w.clientWidth||!w.clientHeight){atFitLater();return}const kmin=Math.min(w.clientWidth/G.W,w.clientHeight/G.H)*0.45;S.at.k=Math.max(kmin,Math.min(6,k));S.at.x=x;S.at.y=y;atClamp();
   const K_=S.at.k,X_=S.at.x,Y_=S.at.y,tr=`translate(${X_}px,${Y_}px) scale(${K_})`,tt=anim?"transform .7s cubic-bezier(.2,.7,.2,1)":"none",zf=G.K/150;
   for(const m of [$("mapworld"),$("mapworld2")]){if(!m)continue;m.style.transition=tt;m.style.transform=tr;m.style.setProperty("--ik",1/K_);
     m.classList.toggle("z1",K_*zf>=0.3);m.classList.toggle("z2",K_*zf>=0.42);m.classList.toggle("z3",K_*zf>=0.9);m.classList.toggle("z4",K_*zf>=1.8)}
@@ -4497,7 +4525,7 @@ function atDraw(){
     return`<button type="button" class="pm r${rk}${cp?" cap":""}${ruin&&!cp?" ruin":""}${spIds&&spIds.has(p.id)?" lit":""}${sel===p.id?" sel":""}${st.length?" story":""}" data-pm="${esc(p.id)}" style="left:${x.toFixed(1)}px;top:${yy.toFixed(1)}px" title="${esc(nm)}${cp?" · capital — "+esc(cp.note):""}${ruin&&!cp?" · ruins since "+yfmt(p.to):""}">
       ${(()=>{const ic=placeIco(p);if(ic&&/\.(webp|png)$/.test(ic))return`<span class="pmi pimg ${cp?"k-cap":"k-"+p.kind}"><img src="${ic}" alt="">${cp?`<span class="pcrown">${crownSvg(cp.crown)}</span>`:""}</span>`;return`<span class="pmi ${cp?"k-cap":"k-"+p.kind}">${cp?crownSvg(cp.crown):(ic||KICON[p.kind]||"●")}</span>`})()}<span class="pml">${esc(nm.replace(/\s*\(.*?\)/g,""))}${cx?`<i class="pmc">${cx}</i>`:""}</span>${st.length?`<span class="pmflag" title="${esc(st.map(e=>e.title).join(", "))}">⚑</span>`:""}</button>`}).join("");
   const sp=AGESPAN[age],gr=greenAt(y);
-  $("mapBanner").innerHTML=`<div class="mb-dynrow">${dynAt(y).map(d=>{const k=rulersAt(y).filter(r=>!/kings|chiefs|emperors|caliphs|governors|sultans/i.test(r[0])||rulersAt(y).length===1).map(r=>r[0]).join(" / ");return dynChip(d,false,k)}).join("")}<button type="button" class="dyn-all" data-sigopen title="See the patron god of every dynasty">Dynasty gods ▸</button></div><div class="mb-line"><span class="mb-age">${esc(AGES.find(a=>a[0]===age)[1])}</span><span class="mb-year">${yfmt(y)}</span></div>${S.at.spot?`<div class="mb-spot">Lit places are alive now; click one to start an episode. <button type="button" data-spotoff>Clear</button></div>`:""}<div class="mb-sub">${esc((PERIODS.find(p=>y>=p[1]&&y<p[2])||[""])[0])}${gr>0.05?` · ${gr>0.7?"Green Sahara: grassland and seasonal lakes":"The desert is drying"}`:""}</div>`;
+  $("mapBanner").innerHTML=`<div class="mb-dynrow">${dynAt(y).map(d=>{const k=rulersAt(y).filter(r=>!/kings|chiefs|emperors|caliphs|governors|sultans/i.test(r[0])||rulersAt(y).length===1).map(r=>r[0]).join(" / ");return dynChip(d,false,k)}).join("")}<button type="button" class="dyn-all" data-sigopen title="See the patron god of every dynasty">Dynasty gods ▸</button><button type="button" class="dyn-all" data-pyropen title="Who was who in this age, from the top down">Social pyramid ▸</button><button type="button" class="dyn-all" data-wardopen title="What people wore in this age">Wardrobe ▸</button></div><div class="mb-line"><span class="mb-age">${esc(AGES.find(a=>a[0]===age)[1])}</span><span class="mb-year">${yfmt(y)}</span></div>${S.at.spot?`<div class="mb-spot">Lit places are alive now; click one to start an episode. <button type="button" data-spotoff>Clear</button></div>`:""}<div class="mb-sub">${esc((PERIODS.find(p=>y>=p[1]&&y<p[2])||[""])[0])}${gr>0.05?` · ${gr>0.7?"Green Sahara: grassland and seasonal lakes":"The desert is drying"}`:""}</div>`;
   $("mapMode").innerHTML=[["political","Factions"],["provinces","Provinces"],["terrain","Terrain"]].map(([k,l])=>`<button type="button" data-mmode="${k}" aria-pressed="${S.at.mode===k}">${l}</button>`).join("")+`<button type="button" data-roads aria-pressed="${!!S.at.roads}" title="Show or hide the caravan roads through the desert">Roads</button>`;
   $("mapworld").dataset.mode=S.at.mode;
   $("mapLegend").innerHTML=`<span><i class="lg live"></i>Lived in</span><span><i class="lg ruin"></i>Ruins</span><span><i class="lg cap">♛</i>Capital (crown shows the realm)</span><span>⚑ Your story</span><span><i class="pmc">n</i> Codex entries</span>`;
@@ -4801,7 +4829,7 @@ function atBind(){
     const rg=tgt.closest("[data-rg]");if(rg&&!S.at.moved){atRegionCard(+rg.dataset.rg);return}
     const fg=tgt.closest("[data-fog]");if(fg&&!S.at.moved){atRegionCard(+fg.dataset.fog,true);return}
     const fb=tgt.closest("[data-fban]");if(fb){S.at.sel=null;atDraw();atFactionCard(fb.dataset.fban);return}
-    if(tgt.closest("[data-sigopen]")){dynOpen();return}
+    if(tgt.closest("[data-sigopen]")){dynOpen();return} if(tgt.closest("[data-pyropen]")&&typeof pyrOpen==="function"){pyrOpen(ageAt(S.at.year),S.at.year);return} if(tgt.closest("[data-wardopen]")&&typeof wardOpen==="function"){wardOpen(ageAt(S.at.year),S.at.year);return}
     if(tgt.closest("[data-roads]")){S.at.roads=!S.at.roads;atDraw();return}
     const dj=tgt.closest("[data-dynjump]");if(dj){atSetYear(+dj.dataset.dynjump+1,true);return}
     if(tgt.closest("[data-spotoff]")){S.at.spot=null;atDraw();return}
@@ -5085,6 +5113,8 @@ render();
 document.addEventListener("focusout",()=>{if(dirty){clearTimeout(saveT);saveT=setTimeout(saveEp,300)}});
 
 </script>
+<script src="desk-extras.js"></script>
+<script src="desk-voice.js"></script>
 </body>
 </html>
 </body></html>

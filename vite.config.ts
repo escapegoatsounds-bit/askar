@@ -2,14 +2,22 @@ import { defineConfig, loadEnv, type Plugin, type ViteDevServer } from 'vite';
 import react from '@vitejs/plugin-react';
 // @ts-ignore plain JS module (also used by the standalone launcher later)
 import { handle as handleLocal } from './local/store.mjs';
+// @ts-ignore plain JS module
+import { createDeskHandler } from './local/desk.mjs';
+// @ts-ignore plain JS module (voice engine on this PC: /voice/* -> E:\EscapegoatStudio\tools\voice_server.py)
+import { voiceMiddleware } from './local/voice.mjs';
 
-/** Local-first storage: /local/* answers database + file requests from disk. */
+/** Local-first storage: /local/* answers database + file requests from disk; /desk/ is the Production Desk. */
 function localStore(): Plugin {
   return {
     name: 'local-store',
     configureServer(server: ViteDevServer) {
+      const handleDesk = createDeskHandler({ root: server.config.root });
+      server.middlewares.use(voiceMiddleware({ root: server.config.root }));
       server.middlewares.use(async (req, res, next) => {
-        if (!req.url || !req.url.startsWith('/local/')) return next();
+        if (!req.url) return next();
+        if (await handleDesk(req, res)) return;
+        if (!req.url.startsWith('/local/')) return next();
         await handleLocal(req, res);
       });
     },
