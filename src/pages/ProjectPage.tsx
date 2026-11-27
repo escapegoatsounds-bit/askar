@@ -125,10 +125,7 @@ export default function ProjectPage() {
             {!current && p?.description && <p className="muted">{p.description}</p>}
           </div>
           <div className="row">
-            <div className="avatars" title={(members.data || []).map((m) => `${m.email} (${m.role})`).join('\n')}>
-              {(members.data || []).slice(0, 5).map((m) => <span key={m.email} className="avatar">{m.email[0].toUpperCase()}</span>)}
-            </div>
-            <button className={panel === 'people' ? '' : 'ghost'} onClick={() => setPanel(panel === 'people' ? 'none' : 'people')}>👥 Share</button>
+            {/* Local-first: sharing/invites removed (the People panel is no longer reachable). */}
             {isOwner && <button className="ghost" onClick={() => setPanel(panel === 'settings' ? 'none' : 'settings')}>⚙</button>}
           </div>
         </section>
