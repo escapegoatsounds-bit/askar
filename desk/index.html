@@ -1091,7 +1091,16 @@ const CAMERA={
  "droneOrbit":{label:"Drone orbit",vid:"slow drone orbit around the main subject at a steady distance, background sliding behind it",post:"Needs a 2.5D depth map or a generated clip; FG and BG move in opposite directions."},
  "droneTop":{label:"Drone top-down descent",vid:"overhead top-down drone view slowly descending toward the subject, the ground pattern growing",post:"Shoot the still as a top-down view; scale 100→118%."},
  "craneOver":{label:"Crane over the foreground",vid:"crane moves up and over a foreground element (rock, reeds, wall) to reveal the scene beyond",post:"FG layer slides down and out of frame; MG and BG rise slowly."},
- "slideThrough":{label:"Slide through the layers",vid:"slow forward glide through the scene, passing between foreground elements so they slide past both sides of the lens",post:"Cut FG into left/right layers; scale FG 100→150%, MG 100→112%, BG 100→103%."}
+ "slideThrough":{label:"Slide through the layers",vid:"slow forward glide through the scene, passing between foreground elements so they slide past both sides of the lens",post:"Cut FG into left/right layers; scale FG 100→150%, MG 100→112%, BG 100→103%."},
+ "walkThrough":{label:"Walk through the frozen moment",vid:"smooth eye-level Steadicam walking forward between frozen people, passing them closely on both sides, the scene unfolding in depth",post:"Image-to-video AI with start and end frames; 2.5D only for short moves."},
+ "walkPast":{label:"Walk past (tracking alongside)",vid:"smooth tracking shot walking alongside a row of frozen people, the nearest faces sliding past the lens",post:"Strong parallax: FG 12%, MG 5%, BG 1%."},
+ "orbitFrozen":{label:"Frozen-time orbit (bullet time)",vid:"slow 90 to 180 degree arc around the frozen subject caught mid-action, dust and fabric drifting",post:"Keep to 90° (max 180°) or faces get redrawn; use a character reference image."},
+ "orbitLow":{label:"Low hero orbit",vid:"low-angle 60 to 90 degree arc looking up at the frozen figure against the sky",post:"As orbitFrozen."},
+ "pushUnder":{label:"Push under / through",vid:"camera glides forward under a raised arm, spear or between animal legs, passing through the frozen action",post:"Video AI."},
+ "droneDive":{label:"Drone dive to eye level",vid:"drone starts high above, dives and levels off at eye height, gliding into the scene",post:"Start frame aerial, end frame eye level."},
+ "droneReveal":{label:"Drone pull-out reveal",vid:"drone flies backwards and upward from the frozen moment until it is tiny in the vast land",post:"Scale 140→100% with outpainted edges."},
+ "parallaxPeek":{label:"Parallax peek",vid:"camera slides out from behind a near object to reveal the scene beyond",post:"FG wipes off frame; MG/BG slide slowly."},
+ "fpv":{label:"FPV fly-through",vid:"fast fluid racing-drone path threading through gaps in the frozen chaos, banking past figures",post:"Video AI only; 1–2 climax frames per episode."}
 };
 const PEOPLE={
  "egyptian":{label:"Egyptian (default)",p:"The people are Egyptians of the Nile valley, with a clear Egyptian identity: warm sun-bronzed brown to olive-brown skin, men a deeper reddish-brown from outdoor work and women a lighter golden-brown, as Egyptians painted themselves in their own tombs; straight to wavy black hair; dark almond-shaped eyes; straight or gently aquiline noses; lean, wiry, compact builds of farmers, workers and soldiers. Faces should read as Egyptian, like the people in Egyptian portraiture and Egyptians today"},
@@ -1300,6 +1309,14 @@ function guide(){return Object.assign({},GUIDE_DEFAULT,(S.settingsDocs&&S.settin
 function guideRules(){const g=guide();return `SERIES GUIDELINES FROM THE WRITER (these override any other style rule):\n- EPISODE FORMULA: ${g.formula}\n- ${CRAFT}\n- IMAGES: ${g.image}\n- MOTION: ${g.motion}${g.rules?"\n- OTHER RULES: "+g.rules:""}${songCtx()}${g.photo?"\n- MEDIUM: photography, not painting. Describe every frame as a real photograph (lens, light, depth of field), never as a painting or illustration.":""}${ep()&&ep().theme?"\n- THIS EPISODE'S THEME: "+ep().theme:""}`}
 async function saveGuide(patch){const d=Object.assign(guide(),patch);S.settingsDocs.guide=d;if(S.db)try{await S.db.doc("settings/guide").set(d)}catch(err){toast("Couldn't save the guidelines: "+(err&&err.message||err))}}
 function depthFor(cam){
+  if(cam==="walkThrough")return "Leave clear walkable gaps between the figures, with figures at several depths and a path leading into the scene for a camera walking through.";
+  if(cam==="walkPast")return "Arrange the figures in a line parallel to the camera, the nearest ones large in the foreground, for a camera walking alongside them.";
+  if(cam==="orbitFrozen"||cam==="orbitLow")return "Keep the subject free on all sides with space around it and the background visible all round, for a camera circling it"+(cam==="orbitLow"?", seen from a low angle against open sky.":".");
+  if(cam==="pushUnder")return "Frame the action through a clear gap or arch in the foreground (a raised arm, spear, animal legs, a doorway) for the camera to pass through.";
+  if(cam==="droneDive")return "High vantage that still shows the subject, with open space to descend into.";
+  if(cam==="droneReveal")return "Subject centred in a vast surrounding landscape with wide margins to pull out into.";
+  if(cam==="parallaxPeek")return "A large dark foreground object fills one side of the frame, the scene revealed beyond it.";
+  if(cam==="fpv")return "Many gaps and layers, action spread in depth, a clear flight path through the scene.";
   if(/^drone/.test(cam))return cam==="droneTop"?"Compose as a high top-down aerial view with clear ground patterns and shapes; leave wide margins around the subject.":"Compose as an aerial drone view from a high vantage: a near foreground element (a ridge, palm crowns, rocks) low in the frame, the land stretching to the horizon in clear receding layers, wide margins around the subject so the camera can travel.";
   if(/^crane|craneOver|monolith|tiltUp|tiltDown/.test(cam))return "Leave generous vertical room (sky above, ground below) for a crane or tilt move, with a tall foreground element at one edge to rise past.";
   if(/truck|slideThrough|tarkovsky|orbit/.test(cam))return "Build strong layered depth for a sliding camera: a large foreground element close to the lens on one or both sides (reeds, rocks, a tent pole, a doorway), a clearly separated midground subject, and a distant background, with visible gaps between the layers.";
@@ -1348,6 +1365,7 @@ function buildVideo(s){
    guide().photo?"Animate this photograph as a single moment frozen in time.":"Animate this oil painting as a single moment frozen in time.",
    "ALL PEOPLE AND ANIMALS STAY COMPLETELY STILL, frozen in time: no blinking, no breathing, no head, limb or body movement, no lip or facial change. The only exception: their clothes, hair and loose fabric may stir gently in the breeze.",
    `Series motion rule: ${guide().motion}`,
+   "Time is frozen: people and animals are completely still, like a held breath; only dust, sand, water, smoke, light and fabric drift slowly; the camera moves through the still moment.",
    `Only the environment moves: ${mot.length?mot.map(m=>m.vid).join("; "):"[choose moving elements]"}${s.motionNotes?"; "+s.motionNotes:""}.`,
    seriesOf()?seriesOf().vid+".":"",
    "All motion is slow, subtle and loop-friendly.",
@@ -1758,7 +1776,7 @@ function sheetHTML(e){return `<details class="sheet" ${e.outline?"":"open"}><sum
   <div class="row-g"><button class="btn ochre" type="button" data-act="sheetToStory">Write the story from this sheet</button><span class="hint">This fills the story box below (it replaces what is there). You can still edit the text before breaking it into frames.</span></div></details>`}
 function sheetToStory(){const e=ep();if(!e)return;const g=k=>String(e[k]||"").trim();
   if(!SHEET.some(([k])=>g(k))){toast("Fill in at least a few fields first.");return}
-  if(e.outline&&!confirm("Replace the current story text with the one built from the sheet?"))return;
+  if(e.outline&&!(S.sheetArm&&Date.now()-S.sheetArm<6000)){S.sheetArm=Date.now();const b=document.querySelector('[data-act="sheetToStory"]');if(b){b.textContent="Click again to replace the current story";setTimeout(()=>{if(b.isConnected&&Date.now()-S.sheetArm>=5900)b.textContent="Write the story from this sheet"},6000)}toast("This replaces the story text below. Click the button again within 6 seconds to confirm.");return}S.sheetArm=0;
   const beats=g("sh_beats").split(/\n+/).map(x=>x.replace(/^\s*[-•*\d.)]+\s*/,"").trim()).filter(Boolean);
   const L=[];
   if(g("sh_who"))L.push("NARRATOR: "+g("sh_who")+".");
