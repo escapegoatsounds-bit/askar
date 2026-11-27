@@ -213,5 +213,5 @@ We live here now.
 
 ---
 
-**Word count:** about 780 spoken words in 11:00, leaving space for music, ambience and silence.
-**Accuracy notes:** "red metal" = Badarian copper beads (among the earliest metal in Egypt). "A child buried with nothing" and the gazelle-horn elder follow real Gebel Ramlah burials. Nebet never names the gods; the song does.
+**Word count:** about 690 spoken words in 11:00, leaving space for music, ambience and silence.
+**Accuracy notes:** "red metal" = Badarian copper beads (among the earliest metal in Egypt). The gazelle-horn elder and the rich grave goods follow real Gebel Ramlah burials (c. 4600–4400 BC); the child buried with nothing is a story beat showing the famine, not a documented grave. Nebet never names the gods; the song does.
