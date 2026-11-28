@@ -1,5 +1,7 @@
 # Episode 1 · Where the Nile Breathes Life · Final narration script (v2, as loaded in the Desk)
 
+> **Numbering note (28 Nov 2026):** the Desk now has six silent star-gods frames after frame 40 (see `episode-1-star-gods-scene.md`), so frames 41–66 below are Desk frames 47–72, and every time from 6:40 on is 30 s later. The spoken lines are unchanged.
+
 *c. 4500 BC · Narrator: **Nebet**, speaking to herself and to us like reading her own diary aloud · English for dubbing · about 2.2 words/second; every line fits its 10-second frame.*
 
 ---
